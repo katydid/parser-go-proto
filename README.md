@@ -1,4 +1,4 @@
-## parser-gogo-proto
+## parser-go-proto
 
-Parser for Protocol Buffers in Go using GoGoProtobuf
+Parser for Protocol Buffers in Go
 
