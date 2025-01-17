@@ -18,10 +18,10 @@ import (
 	"io"
 	"testing"
 
-	"github.com/gogo/protobuf/proto"
+	"github.com/katydid/parser-go-proto/debug"
+	"github.com/katydid/parser-go-proto/proto/prototests"
 	"github.com/katydid/parser-go/parser"
-	"github.com/katydid/parser-gogo-proto/debug"
-	"github.com/katydid/parser-gogo-proto/proto/prototests"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestDebug(t *testing.T) {

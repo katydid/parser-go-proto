@@ -17,7 +17,7 @@ package proto
 import (
 	"strings"
 
-	descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
 type errUnknown struct {
@@ -47,7 +47,7 @@ type descMap struct {
 
 // NewDescriptorMap returns a map of the FileDescriptorSet starting at the message represented by the package name and message name.
 func NewDescriptorMap(pkgName, msgName string, desc *descriptor.FileDescriptorSet) (DescMap, error) {
-	root := desc.GetMessage(pkgName, msgName)
+	root := GetMessage(desc, pkgName, msgName)
 	if root == nil {
 		return nil, &errUnknown{pkgName + "." + msgName}
 	}
@@ -89,11 +89,11 @@ func (this *descMap) findExts(pkgName string, msgName string) []*descriptor.Fiel
 }
 
 func couldBePacked(field *descriptor.FieldDescriptorProto) bool {
-	return field.IsRepeated() && field.IsScalar()
+	return IsRepeated(field) && IsScalar(field)
 }
 
 func keysOf(field *descriptor.FieldDescriptorProto) []uint64 {
-	wireType := field.WireType()
+	wireType := WireType(field)
 	fieldNumber := field.GetNumber()
 	normalKey := uint64(uint32(fieldNumber)<<3 | uint32(wireType))
 	keys := []uint64{normalKey}
@@ -111,7 +111,7 @@ func (this *descMap) visit(pkgName string, msg *descriptor.DescriptorProto) erro
 		return nil
 	}
 	fields := msg.GetField()
-	if msg.HasExtension() {
+	if HasExtension(msg) {
 		exts := this.findExts(pkgName, msg.GetName())
 		fields = append(fields, exts...)
 	}
@@ -124,11 +124,11 @@ func (this *descMap) visit(pkgName string, msg *descriptor.DescriptorProto) erro
 			this.msgToField[msg][k] = fields[i]
 		}
 		if f.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
-			newPkgName, newMsgName := this.desc.FindMessage(pkgName, msg.GetName(), f.GetName())
+			newPkgName, newMsgName := FindMessage(this.desc, pkgName, msg.GetName(), f.GetName())
 			if len(newMsgName) == 0 {
 				return &errUnknown{pkgName + "." + msg.GetName() + "." + f.GetName()}
 			}
-			newMsg := this.desc.GetMessage(newPkgName, newMsgName)
+			newMsg := GetMessage(this.desc, newPkgName, newMsgName)
 			if newMsg == nil {
 				return &errUnknown{newPkgName + "." + newMsgName}
 			}

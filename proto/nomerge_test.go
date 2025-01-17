@@ -21,11 +21,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
-	"github.com/katydid/parser-gogo-proto/debug"
-	protoparser "github.com/katydid/parser-gogo-proto/proto"
-	"github.com/katydid/parser-gogo-proto/proto/prototests"
+	"github.com/katydid/parser-go-proto/debug"
+	protoparser "github.com/katydid/parser-go-proto/proto"
+	"github.com/katydid/parser-go-proto/proto/prototests"
+	"google.golang.org/protobuf/proto"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
 func noMerge(data []byte, desc *descriptor.FileDescriptorSet, pkgName, msgName string) error {
@@ -87,7 +87,7 @@ func TestNoMergeLatent(t *testing.T) {
 }
 
 func TestNoMergeNestedNoMerge(t *testing.T) {
-	bigm := prototests.NewPopulatedBigMsg(r, true)
+	bigm := prototests.NewPopulatedBigMsg(r)
 	data, err := proto.Marshal(bigm)
 	if err != nil {
 		t.Fatal(err)
@@ -99,8 +99,8 @@ func TestNoMergeNestedNoMerge(t *testing.T) {
 }
 
 func TestNoMergeMessageMerge(t *testing.T) {
-	bigm := prototests.NewPopulatedBigMsg(r, true)
-	bigm.Msg = prototests.NewPopulatedSmallMsg(r, true)
+	bigm := prototests.NewPopulatedBigMsg(r)
+	bigm.Msg = prototests.NewPopulatedSmallMsg(r)
 	data, err := proto.Marshal(bigm)
 	if err != nil {
 		t.Fatal(err)
@@ -115,8 +115,8 @@ func TestNoMergeMessageMerge(t *testing.T) {
 }
 
 func TestNoMergeNestedMerge(t *testing.T) {
-	bigm := prototests.NewPopulatedBigMsg(r, true)
-	m := prototests.NewPopulatedSmallMsg(r, true)
+	bigm := prototests.NewPopulatedBigMsg(r)
+	m := prototests.NewPopulatedSmallMsg(r)
 	if len(m.FlightParachute) == 0 {
 		m.FlightParachute = []uint32{1}
 	}

@@ -15,10 +15,7 @@
 syntax = "proto2";
 package prototests;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-option (gogoproto.description_all) = true;
-option (gogoproto.goproto_unkeyed_all) = false;
-option (gogoproto.goproto_sizecache_all) = false;
+option go_package = "github.com/katydid/parser-go-proto/proto/prototests";
 
 //Container contains a field and some extensions.
 message Container {

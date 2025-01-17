@@ -13,4 +13,4 @@
 # limitations under the License.
 
 regenerate:
-	(protoc --gogo_out=. -I=.:../../../../:../../../../github.com/gogo/protobuf/protobuf debug.proto)
+	(protoc --go_out=. --go_opt=paths=source_relative debug.proto)

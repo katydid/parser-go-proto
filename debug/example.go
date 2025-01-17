@@ -14,14 +14,14 @@
 
 package debug
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "google.golang.org/protobuf/proto"
 
 // Input is a sample instance of the Debug struct.
 var Input = &Debug{
-	A: int64(1),
+	A: proto.Int64(1),
 	B: []string{"b2", "b3"},
 	C: &Debug{
-		A: int64(2),
+		A: proto.Int64(2),
 		D: proto.Int32(3),
 		E: []*Debug{
 			{
