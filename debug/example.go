@@ -14,14 +14,14 @@
 
 package debug
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "google.golang.org/protobuf/proto"
 
 // Input is a sample instance of the Debug struct.
 var Input = &Debug{
-	A: int64(1),
+	A: proto.Int64(1),
 	B: []string{"b2", "b3"},
 	C: &Debug{
-		A: int64(2),
+		A: proto.Int64(2),
 		D: proto.Int32(3),
 		E: []*Debug{
 			{
@@ -48,13 +48,11 @@ var Output = Nodes{
 		Field(`D`, `3`),
 		Nested(`E`,
 			Nested(`0`,
-				Field(`A`, `0`),
 				Nested(`B`,
 					Field(`0`, `b4`),
 				),
 			),
 			Nested(`1`,
-				Field(`A`, `0`),
 				Nested(`B`,
 					Field(`0`, `b5`),
 				),

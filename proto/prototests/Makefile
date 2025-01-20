@@ -13,6 +13,6 @@
 # limitations under the License.
 
 regenerate:
-	(protoc --gogo_out=. -I=.:../../../../../:../../../../../github.com/gogo/protobuf/protobuf extensions.proto)
-	(protoc --gogo_out=. -I=.:../../../../../:../../../../../github.com/gogo/protobuf/protobuf msg.proto)
-	(protoc --gogo_out=. -I=.:../../../../../:../../../../../github.com/gogo/protobuf/protobuf proto3.proto)
+	(protoc --go_out=. --go_opt=paths=source_relative extensions.proto)
+	(protoc --go_out=. --go_opt=paths=source_relative msg.proto)
+	(protoc --go_out=. --go_opt=paths=source_relative proto3.proto)

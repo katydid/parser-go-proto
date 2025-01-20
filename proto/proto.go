@@ -27,8 +27,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
 	"github.com/katydid/parser-go/parser"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
 type errVarint struct {
@@ -217,7 +217,7 @@ func (s *protoParser) Next() error {
 		return nil
 	}
 	if s.inPacked {
-		n, l, err := length(s.field.WireType(), s.buf[s.offset:])
+		n, l, err := length(WireType(s.field), s.buf[s.offset:])
 		if err != nil {
 			return err
 		}
@@ -234,9 +234,9 @@ func (s *protoParser) Next() error {
 	field, ok := s.fieldsMap[v]
 	if ok {
 		wireType := int(v & 0x7)
-		s.isPacked = field.IsRepeated() && field.IsScalar() && wireType == 2
+		s.isPacked = IsRepeated(field) && IsScalar(field) && wireType == 2
 	}
-	if !ok || !field.IsRepeated() || s.isPacked {
+	if !ok || !IsRepeated(field) || s.isPacked {
 		s.offset += n
 		wireType := int(v & 0x7)
 		n, l, err := length(wireType, s.buf[s.offset:])
@@ -247,7 +247,7 @@ func (s *protoParser) Next() error {
 		s.length = l
 	}
 	if ok {
-		if field.IsRepeated() && !s.isPacked {
+		if IsRepeated(field) && !s.isPacked {
 			s.isRepeated = true
 			s.length = 0
 		}
@@ -495,7 +495,7 @@ func (s *protoParser) Down() {
 		s.inRepeated = true
 		s.indexRepeated = 0
 		s.length = 0
-	} else if s.field.IsMessage() {
+	} else if IsMessage(s.field) {
 		s.buf = s.buf[s.offset : s.offset+s.length]
 		s.parent = s.descMap.LookupMessage(s.field)
 		s.fieldsMap = s.descMap.LookupFields(s.parent)

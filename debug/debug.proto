@@ -2,15 +2,10 @@ syntax = "proto2";
 
 package debug;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-
-option (gogoproto.gostring_all) = true;
-option (gogoproto.description_all) = true;
-option (gogoproto.goproto_unkeyed_all) = false;
-option (gogoproto.goproto_sizecache_all) = false;
+option go_package = "github.com/katydid/parser-go-proto/debug";
 
 message Debug {
-  optional int64 A = 1 [(gogoproto.nullable) = false];
+  optional int64 A = 1;
   repeated string B = 2;
   optional Debug C = 3;
   optional int32 D = 4;

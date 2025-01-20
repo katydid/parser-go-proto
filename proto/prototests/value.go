@@ -15,8 +15,8 @@
 package prototests
 
 import (
-	"github.com/gogo/protobuf/proto"
-	. "github.com/katydid/parser-gogo-proto/debug"
+	. "github.com/katydid/parser-go-proto/debug"
+	"google.golang.org/protobuf/proto"
 )
 
 // AContainer is a populated Container instance.
@@ -26,15 +26,9 @@ var AContainer = &Container{
 
 func init() {
 	f := float64(0.123)
-	if err := proto.SetExtension(AContainer, E_FieldA, &f); err != nil {
-		panic(err)
-	}
-	if err := proto.SetExtension(AContainer, E_FieldB, &Small{SmallField: proto.Int64(456)}); err != nil {
-		panic(err)
-	}
-	if err := proto.SetExtension(AContainer, E_FieldC, &Big{BigField: proto.Int64(789)}); err != nil {
-		panic(err)
-	}
+	proto.SetExtension(AContainer, E_FieldA, f)
+	proto.SetExtension(AContainer, E_FieldB, &Small{SmallField: proto.Int64(456)})
+	proto.SetExtension(AContainer, E_FieldC, &Big{BigField: proto.Int64(789)})
 }
 
 // AContainerOutput is a populated Container instance that has been parsed into debug.Nodes.
