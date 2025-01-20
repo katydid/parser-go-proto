@@ -43,13 +43,19 @@ var (
 	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
+var debugFileDescriptoSet = protoparser.NewFileDescriptorSet(debug.File_debug_proto)
+
+var msgFileDescriptoSet = protoparser.NewFileDescriptorSet(prototests.File_msg_proto)
+
+var extensionsFileDesciptorSet = protoparser.NewFileDescriptorSet(prototests.File_extensions_proto)
+
 func TestNoMergeNoMerge(t *testing.T) {
 	m := debug.Input
 	data, err := proto.Marshal(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, m.Description(), "debug", "Debug")
+	err = noMerge(data, debugFileDescriptoSet, "debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +70,7 @@ func TestNoMergeMerge(t *testing.T) {
 	}
 	key := byte(uint32(7)<<3 | uint32(1))
 	data = append(data, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, m.Description(), "debug", "Debug")
+	err = noMerge(data, debugFileDescriptoSet, "debug", "Debug")
 	if err == nil || !strings.Contains(err.Error(), "G requires merging") {
 		t.Fatalf("G should require merging")
 	}
@@ -80,7 +86,7 @@ func TestNoMergeLatent(t *testing.T) {
 	}
 	key := byte(uint32(6)<<3 | uint32(5))
 	data = append(data, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, m.Description(), "debug", "Debug")
+	err = noMerge(data, debugFileDescriptoSet, "debug", "Debug")
 	if err == nil || !strings.Contains(err.Error(), "F") {
 		t.Fatalf("F should have latent appending")
 	}
@@ -92,7 +98,7 @@ func TestNoMergeNestedNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, bigm.Description(), "prototests", "BigMsg")
+	err = noMerge(data, msgFileDescriptoSet, "prototests", "BigMsg")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,32 +111,42 @@ func TestNoMergeMessageMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	key := byte(uint32(3)<<3 | uint32(2))
-	fieldkey := byte(uint32(12)<<3 | uint32(5))
-	data = append(data, key, 5, fieldkey, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, bigm.Description(), "prototests", "BigMsg")
-	if err == nil || !strings.Contains(err.Error(), "requires merging") {
-		t.Fatal(err)
+	smallMsgfieldKey := byte(uint32(3)<<3 | uint32(2))         // 3 field number, 2 wire type
+	flightParachuteFieldKey := byte(uint32(12)<<3 | uint32(5)) // 12 field number, 5 wire type
+	data = append(data, smallMsgfieldKey, 5, flightParachuteFieldKey, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
+	err = noMerge(data, msgFileDescriptoSet, "prototests", "BigMsg")
+	if err == nil || !strings.Contains(err.Error(), "Msg requires merging") {
+		t.Fatalf("Msg should require merging, but got Error: <%v>", err)
 	}
 }
 
 func TestNoMergeNestedMerge(t *testing.T) {
-	bigm := prototests.NewPopulatedBigMsg(r)
+
 	m := prototests.NewPopulatedSmallMsg(r)
 	if len(m.FlightParachute) == 0 {
 		m.FlightParachute = []uint32{1}
 	}
 	m.MapShark = proto.String("a")
-	key := byte(uint32(12)<<3 | uint32(5))
-	m.XXX_unrecognized = append(m.XXX_unrecognized, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	bigm.Msg = m
-	data, err := proto.Marshal(bigm)
+	mdata, err := proto.Marshal(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, bigm.Description(), "prototests", "BigMsg")
+	flightParachuteFieldKey := byte(uint32(12)<<3 | uint32(5)) // 12 field number, 5 wire type
+	mdata = append(mdata, flightParachuteFieldKey, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
+
+	bigm := &prototests.BigMsg{
+		Field: proto.Int64(int64(r.Intn(256))),
+	}
+	bigdata, err := proto.Marshal(bigm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	smallMsgfieldKey := byte(uint32(3)<<3 | uint32(2)) // 3 field number, 2 wire type
+	bigdata = append(bigdata, smallMsgfieldKey, byte(len(mdata)))
+	bigdata = append(bigdata, mdata...)
+	err = noMerge(bigdata, msgFileDescriptoSet, "prototests", "BigMsg")
 	if err == nil || !strings.Contains(err.Error(), "FlightParachute requires merging") {
-		t.Fatalf("FlightParachute should require merging %#v", bigm)
+		t.Fatalf("FlightParachute should require merging, but got Error: <%v>", err)
 	}
 }
 
@@ -140,7 +156,7 @@ func TestNoMergeExtensionNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, bigm.Description(), "prototests", "Container")
+	err = noMerge(data, extensionsFileDesciptorSet, "prototests", "Container")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +181,7 @@ func TestNoMergeExtensionMerge(t *testing.T) {
 	n = binary.PutUvarint(datalen, uint64(len(mdata)))
 	datalen = datalen[:n]
 	data = append(data, append(datakey, append(datalen, mdata...)...)...)
-	err = noMerge(data, bigm.Description(), "prototests", "Container")
+	err = noMerge(data, extensionsFileDesciptorSet, "prototests", "Container")
 	if err == nil || !strings.Contains(err.Error(), "FieldB requires merging") {
 		t.Fatalf("FieldB should require merging, but error is %v", err)
 	}

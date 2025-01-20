@@ -26,7 +26,7 @@ var AContainer = &Container{
 
 func init() {
 	f := float64(0.123)
-	proto.SetExtension(AContainer, E_FieldA, &f)
+	proto.SetExtension(AContainer, E_FieldA, f)
 	proto.SetExtension(AContainer, E_FieldB, &Small{SmallField: proto.Int64(456)})
 	proto.SetExtension(AContainer, E_FieldC, &Big{BigField: proto.Int64(789)})
 }
