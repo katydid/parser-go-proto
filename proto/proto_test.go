@@ -24,12 +24,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var debugFileDescriptoSet = NewFileDescriptorSet(debug.File_debug_proto)
-
-var extensionsFileDescriptorSet = NewFileDescriptorSet(prototests.File_extensions_proto)
-
 func TestDebug(t *testing.T) {
-	p, err := NewProtoParser("debug", "Debug", debugFileDescriptoSet)
+	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +44,7 @@ func TestDebug(t *testing.T) {
 }
 
 func TestRandomDebug(t *testing.T) {
-	p, err := NewProtoParser("debug", "Debug", debugFileDescriptoSet)
+	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +71,7 @@ func next(t *testing.T, parser parser.Interface) {
 }
 
 func TestSkipRepeated1(t *testing.T) {
-	p, err := NewProtoParser("debug", "Debug", debugFileDescriptoSet)
+	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +99,7 @@ func TestSkipRepeated1(t *testing.T) {
 }
 
 func TestSkipRepeated2(t *testing.T) {
-	p, err := NewProtoParser("debug", "Debug", debugFileDescriptoSet)
+	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,7 +129,7 @@ func TestSkipRepeated2(t *testing.T) {
 }
 
 func TestIndexIsNotAString(t *testing.T) {
-	p, err := NewProtoParser("debug", "Debug", debugFileDescriptoSet)
+	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +157,7 @@ func TestIndexIsNotAString(t *testing.T) {
 }
 
 func TestExtensionsSmallContainer(t *testing.T) {
-	p, err := NewProtoParser("prototests", "Container", extensionsFileDescriptorSet)
+	p, err := NewParser("prototests", "Container")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +175,7 @@ func TestExtensionsSmallContainer(t *testing.T) {
 }
 
 func TestExtensionsBigContainer(t *testing.T) {
-	p, err := NewProtoParser("prototests", "BigContainer", extensionsFileDescriptorSet)
+	p, err := NewParser("prototests", "BigContainer")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,5 +189,43 @@ func TestExtensionsBigContainer(t *testing.T) {
 	nodes := debug.Walk(p)
 	if !nodes.Equal(prototests.ABigContainerOutput) {
 		t.Fatalf("expected %v, but got %v", prototests.ABigContainerOutput, nodes)
+	}
+}
+
+func TestDebugWithDesc(t *testing.T) {
+	p, err := NewParserWithDesc("debug", "Debug", NewFileDescriptorSet())
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(debug.Input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Init(data); err != nil {
+		t.Fatal(err)
+	}
+	parser := debug.NewLogger(p, debug.NewLineLogger())
+	m := debug.Walk(parser)
+	if !m.Equal(debug.Output) {
+		t.Fatalf("expected %s but got %s", debug.Output, m)
+	}
+}
+
+func TestDebugWithSpecificDesc(t *testing.T) {
+	p, err := NewParserWithDesc("debug", "Debug", NewFileDescriptorSet(debug.File_debug_proto))
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(debug.Input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Init(data); err != nil {
+		t.Fatal(err)
+	}
+	parser := debug.NewLogger(p, debug.NewLineLogger())
+	m := debug.Walk(parser)
+	if !m.Equal(debug.Output) {
+		t.Fatalf("expected %s but got %s", debug.Output, m)
 	}
 }

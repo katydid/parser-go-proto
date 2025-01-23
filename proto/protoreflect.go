@@ -17,11 +17,21 @@ package proto
 import (
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
-// NewFileDescriptorSet is a helper function that converts multiple protoreflect.FileDescriptor into a FileDescriptorSet.
+// NewFileDescriptorSet is a helper function that retrieves the FileDescriptorSet from the protoregistry.
+// If protoreflect.FileDescriptor's are manually provided, then the protoregistry is not queried and
+// the provided protoreflect.FileDescriptor's are simply converted to the FileDescriptorSet.
 func NewFileDescriptorSet(reflectFileDescriptors ...protoreflect.FileDescriptor) *descriptor.FileDescriptorSet {
+	if len(reflectFileDescriptors) == 0 {
+		reflectFileDescriptors = make([]protoreflect.FileDescriptor, 0, protoregistry.GlobalFiles.NumFiles())
+		protoregistry.GlobalFiles.RangeFiles(func(f protoreflect.FileDescriptor) bool {
+			reflectFileDescriptors = append(reflectFileDescriptors, f)
+			return true
+		})
+	}
 	fileDescriptors := make([]*descriptor.FileDescriptorProto, len(reflectFileDescriptors))
 	for i, rfd := range reflectFileDescriptors {
 		fileDescriptors[i] = protodesc.ToFileDescriptorProto(rfd)

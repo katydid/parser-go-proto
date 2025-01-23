@@ -14,10 +14,10 @@
 
 // Package proto contains an implementation of a protocol buffer parser.
 //
+// Defaults and proto3 zero values will not be returned. Fields that are not present in the serialized data, will not be returned.
+//
 // Merging of fields and splitting of arrays are not supported by this parser for optimization reasons.
 // Use the NoLatentAppendingOrMerging function to check whether the marshaled buffer conforms to the limitations.
-//
-// TODO: defaults, maps and proto3 zero values
 package proto
 
 import (
@@ -85,7 +85,6 @@ type protoParser struct {
 	descMap DescMap
 	state
 	stack         []state
-	fieldNames    bool
 	initRoot      *descriptor.DescriptorProto
 	initFieldsMap map[uint64]*descriptor.FieldDescriptorProto
 }
@@ -106,8 +105,8 @@ type state struct {
 	inPacked      bool
 }
 
-// ProtoParser represents a protocol buffer parser.
-type ProtoParser interface {
+// Parser represents a protocol buffer parser.
+type Parser interface {
 	parser.Interface
 	//Init initialises the parser with a marshaled protocol buffer.
 	Init([]byte) error
@@ -119,13 +118,19 @@ type ProtoParser interface {
 	Field() *descriptor.FieldDescriptorProto
 }
 
-// NewProtoParser returns a new protocol buffer parser the specific root message.
+// NewParser returns a new protocol buffer parser the specific root message.
 // When the value of a field name is requested this parser will return the field name using the String method.
-func NewProtoParser(rootPackage, rootMessage string, desc *descriptor.FileDescriptorSet) (ProtoParser, error) {
-	return newProtoParser(rootPackage, rootMessage, desc, true)
+func NewParser(rootPackage, rootMessage string) (Parser, error) {
+	return newProtoParser(rootPackage, rootMessage, NewFileDescriptorSet())
 }
 
-func newProtoParser(srcPackage, srcMessage string, desc *descriptor.FileDescriptorSet, fieldNames bool) (*protoParser, error) {
+// NewParserWithDesc returns a new protocol buffer parser the specific root message.
+// It is the same as NewProtoParser, but allows the user to specifiy the FileDescriptorSet manually instead of relying on the protoregistry.
+func NewParserWithDesc(rootPackage, rootMessage string, desc *descriptor.FileDescriptorSet) (Parser, error) {
+	return newProtoParser(rootPackage, rootMessage, desc)
+}
+
+func newProtoParser(srcPackage, srcMessage string, desc *descriptor.FileDescriptorSet) (*protoParser, error) {
 	descMap, err := NewDescriptorMap(srcPackage, srcMessage, desc)
 	if err != nil {
 		return nil, err
@@ -135,7 +140,6 @@ func newProtoParser(srcPackage, srcMessage string, desc *descriptor.FileDescript
 	return &protoParser{
 		descMap:       descMap,
 		stack:         make([]state, 0, 10),
-		fieldNames:    fieldNames,
 		initRoot:      root,
 		initFieldsMap: fieldsMap,
 	}, nil
@@ -332,9 +336,6 @@ func (s *protoParser) Int() (int64, error) {
 
 func (s *protoParser) Uint() (uint64, error) {
 	if !s.isLeaf {
-		if !s.fieldNames {
-			return uint64(s.field.GetNumber()), nil
-		}
 		return 0, parser.ErrNotUint
 	}
 	typ := s.field.GetType()
@@ -370,7 +371,7 @@ func (s *protoParser) Bool() (bool, error) {
 
 func (s *protoParser) String() (string, error) {
 	if !s.isLeaf {
-		if s.fieldNames && !s.inRepeated {
+		if !s.inRepeated {
 			return s.field.GetName(), nil
 		}
 		return "", parser.ErrNotString

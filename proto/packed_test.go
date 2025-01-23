@@ -36,10 +36,8 @@ var packedOutput1 = debug.Nodes{
 	),
 }
 
-var msgFileDescriptorSet = NewFileDescriptorSet(prototests.File_msg_proto)
-
 func TestPacked1(t *testing.T) {
-	p, err := NewProtoParser("prototests", "Packed", msgFileDescriptorSet)
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +56,7 @@ func TestPacked1(t *testing.T) {
 }
 
 func TestRandomPacked1(t *testing.T) {
-	p, err := NewProtoParser("prototests", "Packed", msgFileDescriptorSet)
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +95,7 @@ var packedOutput2 = debug.Nodes{
 }
 
 func TestPacked2(t *testing.T) {
-	p, err := NewProtoParser("prototests", "Packed", msgFileDescriptorSet)
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +114,7 @@ func TestPacked2(t *testing.T) {
 }
 
 func TestRandomPacked2(t *testing.T) {
-	p, err := NewProtoParser("prototests", "Packed", msgFileDescriptorSet)
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 regenerate:
+	(protoc --go_out=. --go_opt=paths=source_relative example.proto)
 	(protoc --go_out=. --go_opt=paths=source_relative extensions.proto)
 	(protoc --go_out=. --go_opt=paths=source_relative msg.proto)
 	(protoc --go_out=. --go_opt=paths=source_relative proto3.proto)

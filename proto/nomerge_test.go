@@ -25,11 +25,10 @@ import (
 	protoparser "github.com/katydid/parser-go-proto/proto"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"google.golang.org/protobuf/proto"
-	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
-func noMerge(data []byte, desc *descriptor.FileDescriptorSet, pkgName, msgName string) error {
-	parser, err := protoparser.NewProtoParser(pkgName, msgName, desc)
+func noMerge(data []byte, pkgName, msgName string) error {
+	parser, err := protoparser.NewParser(pkgName, msgName)
 	if err != nil {
 		return err
 	}
@@ -43,19 +42,13 @@ var (
 	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
-var debugFileDescriptoSet = protoparser.NewFileDescriptorSet(debug.File_debug_proto)
-
-var msgFileDescriptoSet = protoparser.NewFileDescriptorSet(prototests.File_msg_proto)
-
-var extensionsFileDesciptorSet = protoparser.NewFileDescriptorSet(prototests.File_extensions_proto)
-
 func TestNoMergeNoMerge(t *testing.T) {
 	m := debug.Input
 	data, err := proto.Marshal(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, debugFileDescriptoSet, "debug", "Debug")
+	err = noMerge(data, "debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +63,7 @@ func TestNoMergeMerge(t *testing.T) {
 	}
 	key := byte(uint32(7)<<3 | uint32(1))
 	data = append(data, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, debugFileDescriptoSet, "debug", "Debug")
+	err = noMerge(data, "debug", "Debug")
 	if err == nil || !strings.Contains(err.Error(), "G requires merging") {
 		t.Fatalf("G should require merging")
 	}
@@ -86,7 +79,7 @@ func TestNoMergeLatent(t *testing.T) {
 	}
 	key := byte(uint32(6)<<3 | uint32(5))
 	data = append(data, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, debugFileDescriptoSet, "debug", "Debug")
+	err = noMerge(data, "debug", "Debug")
 	if err == nil || !strings.Contains(err.Error(), "F") {
 		t.Fatalf("F should have latent appending")
 	}
@@ -98,7 +91,7 @@ func TestNoMergeNestedNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, msgFileDescriptoSet, "prototests", "BigMsg")
+	err = noMerge(data, "prototests", "BigMsg")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +107,7 @@ func TestNoMergeMessageMerge(t *testing.T) {
 	smallMsgfieldKey := byte(uint32(3)<<3 | uint32(2))         // 3 field number, 2 wire type
 	flightParachuteFieldKey := byte(uint32(12)<<3 | uint32(5)) // 12 field number, 5 wire type
 	data = append(data, smallMsgfieldKey, 5, flightParachuteFieldKey, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, msgFileDescriptoSet, "prototests", "BigMsg")
+	err = noMerge(data, "prototests", "BigMsg")
 	if err == nil || !strings.Contains(err.Error(), "Msg requires merging") {
 		t.Fatalf("Msg should require merging, but got Error: <%v>", err)
 	}
@@ -144,7 +137,7 @@ func TestNoMergeNestedMerge(t *testing.T) {
 	smallMsgfieldKey := byte(uint32(3)<<3 | uint32(2)) // 3 field number, 2 wire type
 	bigdata = append(bigdata, smallMsgfieldKey, byte(len(mdata)))
 	bigdata = append(bigdata, mdata...)
-	err = noMerge(bigdata, msgFileDescriptoSet, "prototests", "BigMsg")
+	err = noMerge(bigdata, "prototests", "BigMsg")
 	if err == nil || !strings.Contains(err.Error(), "FlightParachute requires merging") {
 		t.Fatalf("FlightParachute should require merging, but got Error: <%v>", err)
 	}
@@ -156,7 +149,7 @@ func TestNoMergeExtensionNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, extensionsFileDesciptorSet, "prototests", "Container")
+	err = noMerge(data, "prototests", "Container")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +174,7 @@ func TestNoMergeExtensionMerge(t *testing.T) {
 	n = binary.PutUvarint(datalen, uint64(len(mdata)))
 	datalen = datalen[:n]
 	data = append(data, append(datakey, append(datalen, mdata...)...)...)
-	err = noMerge(data, extensionsFileDesciptorSet, "prototests", "Container")
+	err = noMerge(data, "prototests", "Container")
 	if err == nil || !strings.Contains(err.Error(), "FieldB requires merging") {
 		t.Fatalf("FieldB should require merging, but error is %v", err)
 	}
