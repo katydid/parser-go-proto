@@ -22,7 +22,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestBrokenLength(t *testing.T) {
+func TestBrokenLengthValue(t *testing.T) {
 	msg := &prototests.Mymessage{Myfield: "myvalue"}
 	data, err := proto.Marshal(msg)
 	if err != nil {
@@ -33,6 +33,33 @@ func TestBrokenLength(t *testing.T) {
 	data[1] = 12
 	t.Logf("mymessage: %v\n", data)
 	protoParser, err := NewParser("prototests", "mymessage")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := protoParser.Init(data); err != nil {
+		t.Fatal(err)
+	}
+	// make sure the parser doesn't panic and only returns an error.
+	if _, err := debug.Walk(protoParser); err == nil {
+		t.Fatal("expected error, because of wrong length")
+	}
+}
+
+func TestBrokenLengthMessage(t *testing.T) {
+	msg := &prototests.BigMsg{
+		Msg: &prototests.SmallMsg{
+			ScarBusStop: proto.String("abc"),
+		},
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("bigmsg: %v\n", data)
+	// change string length of first field to be incorrect.
+	data[1] = 12
+	t.Logf("bigmsg: %v\n", data)
+	protoParser, err := NewParser("prototests", "BigMsg")
 	if err != nil {
 		t.Fatal(err)
 	}

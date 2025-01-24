@@ -103,6 +103,7 @@ type state struct {
 	indexRepeated int
 	isPacked      bool
 	inPacked      bool
+	isError       error
 }
 
 // Parser represents a protocol buffer parser.
@@ -171,6 +172,9 @@ func (s *protoParser) Init(buf []byte) error {
 }
 
 func (s *protoParser) Next() error {
+	if s.isError != nil {
+		return s.isError
+	}
 	if s.isLeaf {
 		if s.hadLeaf {
 			return io.EOF
@@ -542,7 +546,7 @@ func (s *protoParser) Down() {
 		s.indexRepeated = 0
 		s.length = 0
 	} else if IsMessage(s.field) {
-		s.buf = s.buf[s.offset : s.offset+s.length]
+		s.buf, s.isError = s.value()
 		s.parent = s.descMap.LookupMessage(s.field)
 		s.fieldsMap = s.descMap.LookupFields(s.parent)
 		s.offset = 0
@@ -553,7 +557,7 @@ func (s *protoParser) Down() {
 		s.isPacked = false
 		s.inPacked = false
 	} else if s.isPacked && !s.inPacked {
-		s.buf = s.buf[s.offset : s.offset+s.length]
+		s.buf, s.isError = s.value()
 		s.offset = 0
 		s.inPacked = true
 		s.indexRepeated = 0
