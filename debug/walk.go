@@ -106,14 +106,14 @@ func (this Nodes) Equal(that Nodes) bool {
 }
 
 // Walk walks through the whole parser in a top down manner and records the values into a Nodes structute.
-func Walk(p parser.Interface) Nodes {
+func Walk(p parser.Interface) (Nodes, error) {
 	a := make(Nodes, 0)
 	for {
 		if err := p.Next(); err != nil {
 			if err == io.EOF {
 				break
 			} else {
-				panic(err)
+				return nil, err
 			}
 		}
 		value := getValue(p)
@@ -122,12 +122,15 @@ func Walk(p parser.Interface) Nodes {
 		} else {
 			name := fmt.Sprintf("%v", value)
 			p.Down()
-			v := Walk(p)
+			v, err := Walk(p)
+			if err != nil {
+				return nil, err
+			}
 			p.Up()
 			a = append(a, Node{name, v})
 		}
 	}
-	return a
+	return a, nil
 }
 
 // NewRand returns a random integer generator, that can be used with RandomWalk.

@@ -49,7 +49,10 @@ func TestPacked1(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m := debug.Walk(parser)
+	m, err := debug.Walk(parser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !m.Equal(packedOutput1) {
 		t.Fatalf("expected %s but got %s", packedOutput1, m)
 	}
@@ -107,7 +110,10 @@ func TestPacked2(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m := debug.Walk(parser)
+	m, err := debug.Walk(parser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !m.Equal(packedOutput2) {
 		t.Fatalf("expected %s but got %s", packedOutput2, m)
 	}

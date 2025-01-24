@@ -61,7 +61,10 @@ func TestProto31(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m := debug.Walk(parser)
+	m, err := debug.Walk(parser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !m.Equal(proto3Output1) {
 		t.Fatalf("expected %s but got %s", proto3Output1, m)
 	}
