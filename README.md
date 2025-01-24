@@ -59,6 +59,7 @@ We can then use the parser to decode only `myfield` and skip over other fields a
 ```go
 func GetMyField(p parser.Interface) (string, error) {
 	for {
+		// Next parses up to the next field.
 		if err := p.Next(); err != nil {
 			if err == io.EOF {
 				break
@@ -66,6 +67,7 @@ func GetMyField(p parser.Interface) (string, error) {
 				return "", err
 			}
 		}
+		// String returns the field name.
 		fieldName, err := p.String()
 		if err != nil {
 			return "", err
@@ -73,7 +75,9 @@ func GetMyField(p parser.Interface) (string, error) {
 		if fieldName != "myfield" {
 			continue
 		}
+		// Down traverse into the field, so we can get to the field value, which could be another message.
 		p.Down()
+		// Next should always be called after Down, since it needs to start parsing the first field.
 		if err := p.Next(); err != nil {
 			if err == io.EOF {
 				break
@@ -81,11 +85,15 @@ func GetMyField(p parser.Interface) (string, error) {
 				return "", err
 			}
 		}
+		// String can also be used to return values of type string.
+		// It returns an error if this is called on a non string type, like int64.
 		return p.String()
 	}
 	return "", nil
 }
 ```
+
+For more details on how to use the parser's methods like Next, Up and Down see the [Parser Interface](https://github.com/katydid/parser-go).
 
 ## Known Issues
 
