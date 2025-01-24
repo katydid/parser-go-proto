@@ -278,8 +278,11 @@ func (s *protoParser) IsLeaf() bool {
 	return s.isLeaf
 }
 
-func (s *protoParser) Value() []byte {
-	return s.buf[s.offset : s.offset+s.length]
+func (s *protoParser) value() ([]byte, error) {
+	if s.offset+s.length > len(s.buf) {
+		return nil, io.ErrShortBuffer
+	}
+	return s.buf[s.offset : s.offset+s.length], nil
 }
 
 func (s *protoParser) Double() (float64, error) {
@@ -290,7 +293,10 @@ func (s *protoParser) Double() (float64, error) {
 		s.field.GetType() != descriptor.FieldDescriptorProto_TYPE_FLOAT {
 		return 0, parser.ErrNotDouble
 	}
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	if len(buf) == 8 {
 		return *(*float64)(unsafe.Pointer(&buf[0])), nil
 	}
@@ -361,7 +367,10 @@ func (s *protoParser) Bool() (bool, error) {
 	if s.field.GetType() != descriptor.FieldDescriptorProto_TYPE_BOOL {
 		return false, parser.ErrNotBool
 	}
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return false, err
+	}
 	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return false, fmt.Errorf("decodeVarint n = %d", n)
@@ -379,7 +388,10 @@ func (s *protoParser) String() (string, error) {
 	if s.field.GetType() != descriptor.FieldDescriptorProto_TYPE_STRING {
 		return "", parser.ErrNotString
 	}
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return "", err
+	}
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&buf))
 	strHeader := reflect.StringHeader{Data: header.Data, Len: header.Len}
 	return *(*string)(unsafe.Pointer(&strHeader)), nil
@@ -392,11 +404,15 @@ func (s *protoParser) Bytes() ([]byte, error) {
 	if s.field.GetType() != descriptor.FieldDescriptorProto_TYPE_BYTES {
 		return nil, parser.ErrNotBytes
 	}
-	return s.Value(), nil
+	return s.value()
 }
 
 func (s *protoParser) decodeInt64() (int64, error) {
-	v, n := binary.Uvarint(s.Value())
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
+	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return 0, fmt.Errorf("decodeVarint n = %d", n)
 	}
@@ -404,7 +420,11 @@ func (s *protoParser) decodeInt64() (int64, error) {
 }
 
 func (s *protoParser) decodeUint64() (uint64, error) {
-	v, n := binary.Uvarint(s.Value())
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
+	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return 0, fmt.Errorf("decodeVarint n = %d", n)
 	}
@@ -412,7 +432,11 @@ func (s *protoParser) decodeUint64() (uint64, error) {
 }
 
 func (s *protoParser) decodeInt32() (int32, error) {
-	v, n := binary.Uvarint(s.Value())
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
+	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return 0, fmt.Errorf("decodeVarint n = %d", n)
 	}
@@ -420,7 +444,10 @@ func (s *protoParser) decodeInt32() (int32, error) {
 }
 
 func (s *protoParser) decodeFixed64() (uint64, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	if len(buf) < 8 {
 		return 0, fmt.Errorf("decodeDouble: buffer too short")
 	}
@@ -428,7 +455,10 @@ func (s *protoParser) decodeFixed64() (uint64, error) {
 }
 
 func (s *protoParser) decodeFixed32() (uint32, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	if len(buf) < 4 {
 		return 0, fmt.Errorf("decodeDouble: buffer too short")
 	}
@@ -436,7 +466,10 @@ func (s *protoParser) decodeFixed32() (uint32, error) {
 }
 
 func (s *protoParser) decodeUint32() (uint32, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return 0, fmt.Errorf("decodeVarint n = %d", n)
@@ -445,7 +478,10 @@ func (s *protoParser) decodeUint32() (uint32, error) {
 }
 
 func (s *protoParser) decodeSfixed32() (int32, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	if len(buf) < 4 {
 		return 0, fmt.Errorf("decodeDouble: buffer too short")
 	}
@@ -453,7 +489,10 @@ func (s *protoParser) decodeSfixed32() (int32, error) {
 }
 
 func (s *protoParser) decodeSfixed64() (int64, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	if len(buf) < 8 {
 		return 0, fmt.Errorf("decodeDouble: buffer too short")
 	}
@@ -461,7 +500,10 @@ func (s *protoParser) decodeSfixed64() (int64, error) {
 }
 
 func (s *protoParser) decodeSint32() (int32, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return 0, fmt.Errorf("decodeVarint n = %d", n)
@@ -470,7 +512,10 @@ func (s *protoParser) decodeSint32() (int32, error) {
 }
 
 func (s *protoParser) decodeSint64() (int64, error) {
-	buf := s.Value()
+	buf, err := s.value()
+	if err != nil {
+		return 0, err
+	}
 	v, n := binary.Uvarint(buf)
 	if n <= 0 {
 		return 0, fmt.Errorf("decodeVarint n = %d", n)

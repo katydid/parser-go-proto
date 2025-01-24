@@ -37,7 +37,10 @@ func TestDebug(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m := debug.Walk(parser)
+	m, err := debug.Walk(parser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !m.Equal(debug.Output) {
 		t.Fatalf("expected %s but got %s", debug.Output, m)
 	}
@@ -168,7 +171,10 @@ func TestExtensionsSmallContainer(t *testing.T) {
 	if err := p.Init(data); err != nil {
 		t.Fatal(err)
 	}
-	nodes := debug.Walk(p)
+	nodes, err := debug.Walk(p)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !nodes.Equal(prototests.AContainerOutput) {
 		t.Fatalf("expected %v, but got %v", prototests.AContainerOutput, nodes)
 	}
@@ -186,7 +192,10 @@ func TestExtensionsBigContainer(t *testing.T) {
 	if err := p.Init(data); err != nil {
 		t.Fatal(err)
 	}
-	nodes := debug.Walk(p)
+	nodes, err := debug.Walk(p)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !nodes.Equal(prototests.ABigContainerOutput) {
 		t.Fatalf("expected %v, but got %v", prototests.ABigContainerOutput, nodes)
 	}
@@ -205,7 +214,10 @@ func TestDebugWithDesc(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m := debug.Walk(parser)
+	m, err := debug.Walk(parser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !m.Equal(debug.Output) {
 		t.Fatalf("expected %s but got %s", debug.Output, m)
 	}
@@ -224,7 +236,10 @@ func TestDebugWithSpecificDesc(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m := debug.Walk(parser)
+	m, err := debug.Walk(parser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !m.Equal(debug.Output) {
 		t.Fatalf("expected %s but got %s", debug.Output, m)
 	}
