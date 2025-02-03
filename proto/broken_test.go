@@ -17,8 +17,8 @@ package proto
 import (
 	"testing"
 
-	"github.com/katydid/parser-go-proto/debug"
 	"github.com/katydid/parser-go-proto/proto/prototests"
+	"github.com/katydid/parser-go/parser/debug"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -40,7 +40,7 @@ func TestBrokenLengthValue(t *testing.T) {
 		t.Fatal(err)
 	}
 	// make sure the parser doesn't panic and only returns an error.
-	if _, err := debug.Walk(protoParser); err == nil {
+	if _, err := debug.Parse(protoParser); err == nil {
 		t.Fatal("expected error, because of wrong length")
 	}
 }
@@ -67,7 +67,7 @@ func TestBrokenLengthMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	// make sure the parser doesn't panic and only returns an error.
-	if _, err := debug.Walk(protoParser); err == nil {
+	if _, err := debug.Parse(protoParser); err == nil {
 		t.Fatal("expected error, because of wrong length")
 	}
 }

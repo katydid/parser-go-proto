@@ -18,9 +18,10 @@ import (
 	"io"
 	"testing"
 
-	"github.com/katydid/parser-go-proto/debug"
+	protodebug "github.com/katydid/parser-go-proto/debug"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"github.com/katydid/parser-go/parser"
+	"github.com/katydid/parser-go/parser/debug"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -29,7 +30,7 @@ func TestDebug(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,12 +38,12 @@ func TestDebug(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Walk(parser)
+	m, err := debug.Parse(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !m.Equal(debug.Output) {
-		t.Fatalf("expected %s but got %s", debug.Output, m)
+	if !m.Equal(protodebug.Output) {
+		t.Fatalf("expected %s but got %s", protodebug.Output, m)
 	}
 }
 
@@ -51,7 +52,7 @@ func TestRandomDebug(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +61,9 @@ func TestRandomDebug(t *testing.T) {
 			t.Fatal(err)
 		}
 		//l := debug.NewLogger(p, debug.NewLineLogger())
-		debug.RandomWalk(p, debug.NewRand(), 10, 3)
+		if err := debug.RandomWalk(p, debug.NewRand(), 10, 3); err != nil {
+			t.Fatal(err)
+		}
 		//t.Logf("original %v vs random %v", debug.Output, m)
 	}
 }
@@ -78,7 +81,7 @@ func TestSkipRepeated1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +109,7 @@ func TestSkipRepeated2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +139,7 @@ func TestIndexIsNotAString(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +174,7 @@ func TestExtensionsSmallContainer(t *testing.T) {
 	if err := p.Init(data); err != nil {
 		t.Fatal(err)
 	}
-	nodes, err := debug.Walk(p)
+	nodes, err := debug.Parse(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +195,7 @@ func TestExtensionsBigContainer(t *testing.T) {
 	if err := p.Init(data); err != nil {
 		t.Fatal(err)
 	}
-	nodes, err := debug.Walk(p)
+	nodes, err := debug.Parse(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +209,7 @@ func TestDebugWithDesc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,21 +217,21 @@ func TestDebugWithDesc(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Walk(parser)
+	m, err := debug.Parse(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !m.Equal(debug.Output) {
-		t.Fatalf("expected %s but got %s", debug.Output, m)
+	if !m.Equal(protodebug.Output) {
+		t.Fatalf("expected %s but got %s", protodebug.Output, m)
 	}
 }
 
 func TestDebugWithSpecificDesc(t *testing.T) {
-	p, err := NewParserWithDesc("debug", "Debug", NewFileDescriptorSet(debug.File_debug_proto))
+	p, err := NewParserWithDesc("debug", "Debug", NewFileDescriptorSet(protodebug.File_debug_proto))
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := proto.Marshal(debug.Input)
+	data, err := proto.Marshal(protodebug.Input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,11 +239,11 @@ func TestDebugWithSpecificDesc(t *testing.T) {
 		t.Fatal(err)
 	}
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Walk(parser)
+	m, err := debug.Parse(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !m.Equal(debug.Output) {
-		t.Fatalf("expected %s but got %s", debug.Output, m)
+	if !m.Equal(protodebug.Output) {
+		t.Fatalf("expected %s but got %s", protodebug.Output, m)
 	}
 }
