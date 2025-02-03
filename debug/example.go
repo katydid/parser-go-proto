@@ -14,7 +14,11 @@
 
 package debug
 
-import proto "google.golang.org/protobuf/proto"
+import (
+	proto "google.golang.org/protobuf/proto"
+
+	"github.com/katydid/parser-go/parser/debug"
+)
 
 // Input is a sample instance of the Debug struct.
 var Input = &Debug{
@@ -37,30 +41,30 @@ var Input = &Debug{
 }
 
 // Output is a sample instance of Nodes that repesents the Input variable after it has been parsed by Walk.
-var Output = Nodes{
-	Field(`A`, `1`),
-	Nested(`B`,
-		Field(`0`, `b2`),
-		Field(`1`, `b3`),
+var Output = debug.Nodes{
+	debug.Field(`A`, `1`),
+	debug.Nested(`B`,
+		debug.Field(`0`, `b2`),
+		debug.Field(`1`, `b3`),
 	),
-	Nested(`C`,
-		Field(`A`, `2`),
-		Field(`D`, `3`),
-		Nested(`E`,
-			Nested(`0`,
-				Nested(`B`,
-					Field(`0`, `b4`),
+	debug.Nested(`C`,
+		debug.Field(`A`, `2`),
+		debug.Field(`D`, `3`),
+		debug.Nested(`E`,
+			debug.Nested(`0`,
+				debug.Nested(`B`,
+					debug.Field(`0`, `b4`),
 				),
 			),
-			Nested(`1`,
-				Nested(`B`,
-					Field(`0`, `b5`),
+			debug.Nested(`1`,
+				debug.Nested(`B`,
+					debug.Field(`0`, `b5`),
 				),
 			),
 		),
 	),
-	Field(`D`, `4`),
-	Nested(`F`,
-		Field(`0`, `5`),
+	debug.Field(`D`, `4`),
+	debug.Nested(`F`,
+		debug.Field(`0`, `5`),
 	),
 }

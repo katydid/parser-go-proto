@@ -15,8 +15,9 @@
 package prototests
 
 import (
-	. "github.com/katydid/parser-go-proto/debug"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/katydid/parser-go/parser/debug"
 )
 
 // AContainer is a populated Container instance.
@@ -32,15 +33,15 @@ func init() {
 }
 
 // AContainerOutput is a populated Container instance that has been parsed into debug.Nodes.
-var AContainerOutput = Nodes{
-	Field(`FieldA`, `0.123`),
-	Nested(`FieldB`,
-		Field(`SmallField`, `456`),
+var AContainerOutput = debug.Nodes{
+	debug.Field(`FieldA`, `0.123`),
+	debug.Nested(`FieldB`,
+		debug.Field(`SmallField`, `456`),
 	),
-	Nested(`FieldC`,
-		Field(`BigField`, `789`),
+	debug.Nested(`FieldC`,
+		debug.Field(`BigField`, `789`),
 	),
-	Field(`Field1`, `123`),
+	debug.Field(`Field1`, `123`),
 }
 
 // ABigContainer is a populated BigContainer instance.
@@ -50,7 +51,7 @@ var ABigContainer = &BigContainer{
 }
 
 // ABigContainer is a populated BigContainer instance that has been parsed into debug.Nodes.
-var ABigContainerOutput = Nodes{
-	Nested(`M`, AContainerOutput...),
-	Field(`Field13`, `987`),
+var ABigContainerOutput = debug.Nodes{
+	debug.Nested(`M`, AContainerOutput...),
+	debug.Field(`Field13`, `987`),
 }
