@@ -19,16 +19,6 @@ all: dep regenerate build test
 dep:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 
-checklicense:
-	go get github.com/awalterschulze/checklicense
-	checklicense . \
-	debug/debug.proto \
-	doc.go \
-	tools/tools.go \
-	.svg \
-	.txt \
-	install_protoc.sh
-
 test:
 	go test ./...
 
@@ -53,12 +43,6 @@ nuke: clean
 
 gofmt:
 	gofmt -l -s -w .
-
-travis:
-	make all
-	make errcheck
-	make checklicense
-	make diff
 
 errcheck:
 	go get github.com/kisielk/errcheck
