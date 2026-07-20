@@ -1,6 +1,6 @@
 module github.com/katydid/parser-go-proto
 
-go 1.24
+go 1.26.3
 
 tool google.golang.org/protobuf/cmd/protoc-gen-go
 
