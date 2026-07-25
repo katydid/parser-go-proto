@@ -12,31 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+// Package proto contains an implementation of a protocol buffer parser.
+//
+// Defaults and proto3 zero values will not be returned. Fields that are not present in the serialized data, will not be returned.
+//
+// Merging of fields and splitting of arrays are not supported by this parser for optimization reasons.
+// Use the NoLatentAppendingOrMerging function to check whether the marshaled buffer conforms to the limitations.
 package proto
-
-import (
-	"errors"
-	"fmt"
-)
-
-type errVarint struct {
-	buf []byte
-}
-
-func newErrVarint(buf []byte) error {
-	buffer := make([]byte, 10)
-	nn := copy(buffer, buf)
-	return &errVarint{buffer[:nn]}
-}
-
-func (this *errVarint) Error() string {
-	return fmt.Sprintf("parser/proto: error decoding varint from %#v", this.buf)
-}
-
-var errBufferOverlow = errors.New("buffer overflow")
-
-var errUnknownWireType = errors.New("unknown wire type")
-
-var errDecodeVarint = errors.New("decode varint")
-
-var errUnknownFieldType = errors.New("unknown field type")

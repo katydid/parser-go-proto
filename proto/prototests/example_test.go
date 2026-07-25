@@ -15,11 +15,11 @@
 package prototests
 
 import (
-	"io"
 	"testing"
 
 	protoparser "github.com/katydid/parser-go-proto/proto"
-	"github.com/katydid/parser-go/parser"
+	"github.com/katydid/parser-go/cast"
+	"github.com/katydid/parser-go/parse"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -28,44 +28,43 @@ func NewMarshaledMyMessage() ([]byte, error) {
 	return proto.Marshal(msg)
 }
 
-func NewMyMessageParser(marshaledMyMessage []byte) (parser.Interface, error) {
+func NewMyMessageParser(marshaledMyMessage []byte) (parse.Parser, error) {
 	protoParser, err := protoparser.NewParser("prototests", "mymessage")
 	if err != nil {
 		return nil, err
 	}
-	if err := protoParser.Init(marshaledMyMessage); err != nil {
-		return nil, err
-	}
+	protoParser.Init(marshaledMyMessage)
 	return protoParser, nil
 }
 
-func GetMyField(p parser.Interface) (string, error) {
+func GetMyField(p parse.Parser) (string, error) {
+	if hint, err := p.Next(); err != nil || hint != parse.EnterHint {
+		return "", err
+	}
 	for {
-		if err := p.Next(); err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				return "", err
-			}
-		}
-		fieldName, err := p.String()
-		if err != nil {
+		if hint, err := p.Next(); err != nil || hint != parse.FieldHint {
 			return "", err
 		}
-		if fieldName != "myfield" {
-			continue
+		kind, val, err := p.Token()
+		if err != nil || kind != parse.StringKind {
+			return "", err
 		}
-		p.Down()
-		if err := p.Next(); err != nil {
-			if err == io.EOF {
-				break
-			} else {
+		fieldName := cast.ToString(val) // cast, do not copy
+		if fieldName != "myfield" {
+			if err := p.Skip(); err != nil {
 				return "", err
 			}
+			continue
 		}
-		return p.String()
+		if hint, err := p.Next(); err != nil || hint != parse.ValueHint {
+			return "", err
+		}
+		kind, val, err = p.Token()
+		if err != nil || kind != parse.StringKind {
+			return "", err
+		}
+		return string(val), nil
 	}
-	return "", nil
 }
 
 func TestExample(t *testing.T) {

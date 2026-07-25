@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/katydid/parser-go-proto/proto/prototests"
-	"github.com/katydid/parser-go/parser/debug"
+	"github.com/katydid/parser-go/parse/debug"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -45,9 +45,7 @@ func TestPacked1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
+	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
 	m, err := debug.Parse(parser)
 	if err != nil {
@@ -68,9 +66,7 @@ func TestRandomPacked1(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := 0; i < 10; i++ {
-		if err := p.Init(data); err != nil {
-			t.Fatal(err)
-		}
+		p.Init(data)
 		l := debug.NewLogger(p, debug.NewLineLogger())
 		if err := debug.RandomWalk(l, debug.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
@@ -108,9 +104,7 @@ func TestPacked2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
+	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
 	m, err := debug.Parse(parser)
 	if err != nil {
@@ -131,9 +125,7 @@ func TestRandomPacked2(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := 0; i < 10; i++ {
-		if err := p.Init(data); err != nil {
-			t.Fatal(err)
-		}
+		p.Init(data)
 		l := debug.NewLogger(p, debug.NewLineLogger())
 		if err := debug.RandomWalk(l, debug.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)

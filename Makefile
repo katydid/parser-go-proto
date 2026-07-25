@@ -22,6 +22,14 @@ dep:
 test:
 	go test ./...
 
+test:
+	go clean -testcache
+	go test ./...
+
+test-purego:
+	go clean -testcache
+	go test -tags=purego ./...
+
 build:
 	go build ./...
 

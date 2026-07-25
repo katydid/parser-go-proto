@@ -32,9 +32,7 @@ func noMerge(data []byte, pkgName, msgName string) error {
 	if err != nil {
 		return err
 	}
-	if err := parser.Init(data); err != nil {
-		return err
-	}
+	parser.Init(data)
 	return protoparser.NoLatentAppendingOrMerging(parser)
 }
 

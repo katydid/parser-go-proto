@@ -46,6 +46,10 @@ jobs:
       run: |
         cd gopath/src/github.com/katydid/parser-go-proto
         make test
+    - name: Test PureGo
+      run: |
+        cd gopath/src/github.com/katydid/parser-go-proto
+        make test-purego
     - name: Checklicencse
       uses: awalterschulze/checklicense@v1.0.6
       with:
