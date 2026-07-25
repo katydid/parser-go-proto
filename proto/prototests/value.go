@@ -17,7 +17,7 @@ package prototests
 import (
 	"google.golang.org/protobuf/proto"
 
-	"github.com/katydid/parser-go/parser/debug"
+	"github.com/katydid/parser-go/parse/debug"
 )
 
 // AContainer is a populated Container instance.

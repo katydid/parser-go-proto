@@ -15,17 +15,176 @@
 package proto
 
 import (
-	"io"
 	"testing"
 
 	protodebug "github.com/katydid/parser-go-proto/debug"
 	"github.com/katydid/parser-go-proto/proto/prototests"
-	"github.com/katydid/parser-go/parser"
-	"github.com/katydid/parser-go/parser/debug"
+	"github.com/katydid/parser-go/expect"
+	"github.com/katydid/parser-go/parse"
+	"github.com/katydid/parser-go/parse/debug"
 	"google.golang.org/protobuf/proto"
 )
 
+func TestSingleDebugAInt(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		A: proto.Int64(1),
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 1)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSingleDebugBRepeatedString(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		B: []string{"a", "b"},
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "a")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "b")
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestDebugBRepeatedStringThenAnotherField(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		B: []string{"a", "b"},
+		D: proto.Int32(123),
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "a")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "b")
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "D")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 123)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSingleDebugCAMessage(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		C: &protodebug.Debug{
+			A: proto.Int64(123),
+		},
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "C")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 123)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSingleDebugERepeatedMessage(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		E: []*protodebug.Debug{
+			{
+				A: proto.Int64(123),
+			},
+			{
+				A: proto.Int64(456),
+			},
+		},
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "E")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 123)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 456)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
 func TestDebug(t *testing.T) {
+	var p parse.ParserWithInit
 	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
@@ -34,11 +193,9 @@ func TestDebug(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
-	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(parser)
+	p.Init(data)
+	// p = debug.NewLogger(p, debug.NewLineLogger())
+	m, err := debug.Parse(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,9 +214,7 @@ func TestRandomDebug(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := 0; i < 10; i++ {
-		if err := p.Init(data); err != nil {
-			t.Fatal(err)
-		}
+		p.Init(data)
 		//l := debug.NewLogger(p, debug.NewLineLogger())
 		if err := debug.RandomWalk(p, debug.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
@@ -68,16 +223,10 @@ func TestRandomDebug(t *testing.T) {
 	}
 }
 
-func next(t *testing.T, parser parser.Interface) {
-	if err := parser.Next(); err != nil {
-		if err != io.EOF {
-			t.Fatal(err)
-		}
-	}
-}
-
 func TestSkipRepeated1(t *testing.T) {
-	p, err := NewParser("debug", "Debug")
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,27 +234,30 @@ func TestSkipRepeated1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
-	parser := debug.NewLogger(p, debug.NewLineLogger())
-	next(t, parser)
-	next(t, parser)
-	parser.Down()
-	next(t, parser)
-	parser.Down()
-	parser.Up()
-	next(t, parser)
-	parser.Down()
-	next(t, parser)
-	next(t, parser)
-	parser.Up()
-	parser.Up()
-	next(t, parser)
+	p.Init(data)
+	p = debug.NewLogger(p, debug.NewLineLogger())
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 0)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 1)
+	expect.NoErr(t, p.Skip)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "C")
 }
 
 func TestSkipRepeated2(t *testing.T) {
-	p, err := NewParser("debug", "Debug")
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,29 +265,26 @@ func TestSkipRepeated2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
-	parser := debug.NewLogger(p, debug.NewLineLogger())
-	next(t, parser)
-	if _, err := parser.String(); err != nil {
-		t.Fatal(err)
-	}
-	next(t, parser)
-	if _, err := parser.String(); err != nil {
-		t.Fatal(err)
-	}
-	parser.Down()
-	next(t, parser)
-	if _, err := parser.Int(); err != nil {
-		t.Fatal(err)
-	}
-	parser.Up()
-	next(t, parser)
+	p.Init(data)
+	p = debug.NewLogger(p, debug.NewLineLogger())
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 0)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 1)
 }
 
 func TestIndexIsNotAString(t *testing.T) {
-	p, err := NewParser("debug", "Debug")
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,23 +292,17 @@ func TestIndexIsNotAString(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
-	parser := debug.NewLogger(p, debug.NewLineLogger())
-	next(t, parser)
-	if _, err := parser.String(); err != nil {
-		t.Fatal(err)
-	}
-	next(t, parser)
-	if _, err := parser.String(); err != nil {
-		t.Fatal(err)
-	}
-	parser.Down()
-	next(t, parser)
-	if _, err := parser.String(); err == nil {
-		t.Fatal("expected error, since an index is not a string")
-	}
+	p.Init(data)
+	p = debug.NewLogger(p, debug.NewLineLogger())
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "A")
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 0)
 }
 
 func TestExtensionsSmallContainer(t *testing.T) {
@@ -171,9 +314,7 @@ func TestExtensionsSmallContainer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
+	p.Init(data)
 	nodes, err := debug.Parse(p)
 	if err != nil {
 		t.Fatal(err)
@@ -192,9 +333,7 @@ func TestExtensionsBigContainer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
+	p.Init(data)
 	nodes, err := debug.Parse(p)
 	if err != nil {
 		t.Fatal(err)
@@ -205,7 +344,7 @@ func TestExtensionsBigContainer(t *testing.T) {
 }
 
 func TestDebugWithDesc(t *testing.T) {
-	p, err := NewParserWithDesc("debug", "Debug", NewFileDescriptorSet())
+	p, err := NewParser("debug", "Debug", WithFileDescriptorSet(NewFileDescriptorSet()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,9 +352,7 @@ func TestDebugWithDesc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
+	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
 	m, err := debug.Parse(parser)
 	if err != nil {
@@ -227,7 +364,7 @@ func TestDebugWithDesc(t *testing.T) {
 }
 
 func TestDebugWithSpecificDesc(t *testing.T) {
-	p, err := NewParserWithDesc("debug", "Debug", NewFileDescriptorSet(protodebug.File_debug_proto))
+	p, err := NewParser("debug", "Debug", WithFileDescriptorSet(NewFileDescriptorSet(protodebug.File_debug_proto)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -235,9 +372,7 @@ func TestDebugWithSpecificDesc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := p.Init(data); err != nil {
-		t.Fatal(err)
-	}
+	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
 	m, err := debug.Parse(parser)
 	if err != nil {

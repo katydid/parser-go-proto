@@ -15,40 +15,52 @@
 package proto
 
 import (
+	"encoding/binary"
 	"fmt"
-	"io"
+
+	"github.com/katydid/parser-go/parse"
 )
 
 // NoLatentAppendingOrMerging returns whether the current parser has some latent fields.
 // Latent fields are those fields you have already seen on your walk, but then after seeing a different field you see this field again.
 // This typically happens when the protocol buffer user created an object marshaled it and then merged it with another value.
 func NoLatentAppendingOrMerging(parser Parser) error {
+	hint, err := parser.Next()
+	if err != nil {
+		return err
+	}
+	if hint == parse.ValueHint {
+		return nil
+	}
+	if hint != parse.EnterHint {
+		return nil
+	}
 	seen := make(map[string]bool)
+	seeni := make(map[int64]bool)
 	for {
-		if err := parser.Next(); err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				return fmt.Errorf("expected EOF, but got: %v", err)
-			}
+		if hint, err := parser.Next(); err != nil || hint != parse.FieldHint {
+			return err
 		}
-		if !parser.IsLeaf() {
-			if _, err := parser.Int(); err != nil {
-				if fieldName, err := parser.String(); err == nil {
-					if _, ok := seen[fieldName]; ok {
-						return fmt.Errorf("%s requires merging", parser.Field().GetName())
-					}
-					seen[fieldName] = true
-				} else {
-					return fmt.Errorf("not an index, field or leaf: %v", err)
-				}
+		kind, val, err := parser.Token()
+		if err != nil {
+			return err
+		}
+		switch kind {
+		case parse.StringKind:
+			fieldName := string(val)
+			if _, ok := seen[fieldName]; ok {
+				return fmt.Errorf("%s requires merging", fieldName)
 			}
-			parser.Down()
-			if err := NoLatentAppendingOrMerging(parser); err != nil {
-				return err
+			seen[fieldName] = true
+		case parse.Int64Kind:
+			index := int64(binary.LittleEndian.Uint64(val))
+			if _, ok := seeni[index]; ok {
+				return fmt.Errorf("%d requires merging", index)
 			}
-			parser.Up()
+			seeni[index] = true
+		}
+		if err := NoLatentAppendingOrMerging(parser); err != nil {
+			return err
 		}
 	}
-	return nil
 }

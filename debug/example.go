@@ -17,7 +17,7 @@ package debug
 import (
 	proto "google.golang.org/protobuf/proto"
 
-	"github.com/katydid/parser-go/parser/debug"
+	"github.com/katydid/parser-go/parse/debug"
 )
 
 // Input is a sample instance of the Debug struct.
