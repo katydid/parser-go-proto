@@ -49,7 +49,33 @@ func TestSingleDebugAInt(t *testing.T) {
 	expect.EOF(t, p)
 }
 
-func TestSingleDebugBRepeatedString(t *testing.T) {
+func TestSingleDebugBRepeated1String(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		B: []string{"a"},
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "a")
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSingleDebugBRepeated2String(t *testing.T) {
 	var p parse.ParserWithInit
 	var err error
 	p, err = NewParser("debug", "Debug")

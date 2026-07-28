@@ -99,8 +99,9 @@ type state struct {
 	offset    int
 	length    int
 	// optional
-	field    *descriptor.FieldDescriptorProto
-	wireType int
+	field       *descriptor.FieldDescriptorProto
+	wireType    int
+	fieldNumber int32
 }
 
 func (p *parser) Reset() {
@@ -175,6 +176,7 @@ func (p *parser) nextInMessage() (parse.Hint, error) {
 	}
 	p.offset += n
 	p.wireType = int(v & 0x7)
+	p.fieldNumber = int32(v >> 3)
 	var ok bool
 	p.field, ok = p.fieldsMap[v]
 	if !ok {
@@ -192,26 +194,23 @@ func (p *parser) nextInMessage() (parse.Hint, error) {
 
 func (p *parser) nextAtField() (parse.Hint, error) {
 	if IsRepeated(p.field) {
-		p.state.kind = inRepeatedFieldState
-		length, err := p.decodeLength(p.wireType)
-		if err != nil {
-			return parse.UnknownHint, err
-		}
-		offset := p.offset
-		p.offset += length
-		p.down(state{
-			parent:    p.parent,
-			fieldsMap: p.fieldsMap,
-			kind:      firstRepeatedValueState,
-			offset:    offset,
-			length:    length,
+		if IsScalar(p.field) && p.wireType == 2 { // isPacked
+			panic("todo")
+		} else {
+			p.state.kind = inMessageState
+			p.down(state{
+				parent:    p.parent,
+				fieldsMap: p.fieldsMap,
+				kind:      firstRepeatedValueState,
+				offset:    p.offset,
+				length:    p.length,
 
-			wireType: p.wireType,
-			field:    p.field,
-		})
-		return parse.EnterHint, nil
-	} else if IsScalar(p.field) && p.wireType == 2 { // isPacked
-		panic("todo")
+				fieldNumber: p.fieldNumber,
+				wireType:    p.wireType,
+				field:       p.field,
+			})
+			return parse.EnterHint, nil
+		}
 	} else if IsMessage(p.field) {
 		length, err := p.decodeLength(p.wireType)
 		if err != nil {
@@ -227,8 +226,9 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 			offset:    offset,
 			length:    length,
 
-			wireType: p.wireType,
-			field:    p.field,
+			fieldNumber: p.fieldNumber,
+			wireType:    p.wireType,
+			field:       p.field,
 		})
 		return parse.EnterHint, nil
 	} else {
@@ -246,8 +246,9 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 			offset:    offset,
 			length:    length,
 
-			wireType: p.wireType,
-			field:    p.field,
+			fieldNumber: p.fieldNumber,
+			wireType:    p.wireType,
+			field:       p.field,
 		})
 		return parse.ValueHint, nil
 	}
@@ -262,24 +263,51 @@ func (p *parser) nextIsLeaf() (parse.Hint, error) {
 
 func (p *parser) nextFirstRepeatedValueState() (parse.Hint, error) {
 	if IsMessage(p.field) {
-		p.state.kind = isLeafState
+		panic("todo")
 	}
+	length, err := p.decodeLength(p.wireType)
+	if err != nil {
+		return parse.UnknownHint, err
+	}
+	offset := p.offset
+	p.offset += length
+	p.state.kind = inRepeatedFieldState
+	p.down(state{
+		parent:    p.parent,
+		fieldsMap: p.fieldsMap,
+		kind:      isLeafState,
+		offset:    offset,
+		length:    length,
+
+		fieldNumber: p.fieldNumber,
+		wireType:    p.wireType,
+		field:       p.field,
+	})
+
 	return parse.ValueHint, nil
 }
 
 func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 	if p.offset == len(p.buf) {
-		p.state.kind = inMessageState
+		offset := p.offset
+		if err := p.up(); err != nil {
+			return parse.UnknownHint, nil
+		}
+		p.offset = offset
 		return parse.LeaveHint, nil
 	}
 	v, n, err := uvarint(p.buf[p.offset:])
 	if err != nil {
 		return parse.UnknownHint, err
 	}
-	wireType := int(v & 0x7)
-	if wireType != p.wireType {
+	fieldNumber := int32(v >> 3)
+	if fieldNumber != p.fieldNumber {
 		// new wire type means we have reached the end of the repeated field
-		p.state.kind = inMessageState
+		offset := p.offset
+		if err := p.up(); err != nil {
+			return parse.UnknownHint, nil
+		}
+		p.offset = offset
 		return parse.LeaveHint, nil
 	}
 	p.offset += n
@@ -435,7 +463,7 @@ func (p *parser) Token() (parse.Kind, []byte, error) {
 		}
 		return parse.UnknownKind, nil, errUnknownFieldType
 	}
-	panic(fmt.Sprintf("unreachable %v", p.kind))
+	panic(fmt.Sprintf("unreachable %c", p.kind))
 }
 
 func (p *parser) decodeLength(wireType int) (int, error) {
