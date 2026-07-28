@@ -20,9 +20,6 @@ dep:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 
 test:
-	go test ./...
-
-test:
 	go clean -testcache
 	go test ./...
 
