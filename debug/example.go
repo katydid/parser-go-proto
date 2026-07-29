@@ -17,7 +17,7 @@ package debug
 import (
 	proto "google.golang.org/protobuf/proto"
 
-	"github.com/katydid/parser-go/parse/debug"
+	"github.com/katydid/parser-go/hedge"
 )
 
 // Input is a sample instance of the Debug struct.
@@ -41,30 +41,30 @@ var Input = &Debug{
 }
 
 // Output is a sample instance of Nodes that repesents the Input variable after it has been parsed by Walk.
-var Output = debug.Nodes{
-	debug.Field(`A`, `1`),
-	debug.Nested(`B`,
-		debug.Field(`0`, `b2`),
-		debug.Field(`1`, `b3`),
+var Output = hedge.Hedge{
+	hedge.Field(`A`, `1`),
+	hedge.Nested(`B`,
+		hedge.Field(`0`, `b2`),
+		hedge.Field(`1`, `b3`),
 	),
-	debug.Nested(`C`,
-		debug.Field(`A`, `2`),
-		debug.Field(`D`, `3`),
-		debug.Nested(`E`,
-			debug.Nested(`0`,
-				debug.Nested(`B`,
-					debug.Field(`0`, `b4`),
+	hedge.Nested(`C`,
+		hedge.Field(`A`, `2`),
+		hedge.Field(`D`, `3`),
+		hedge.Nested(`E`,
+			hedge.Nested(`0`,
+				hedge.Nested(`B`,
+					hedge.Field(`0`, `b4`),
 				),
 			),
-			debug.Nested(`1`,
-				debug.Nested(`B`,
-					debug.Field(`0`, `b5`),
+			hedge.Nested(`1`,
+				hedge.Nested(`B`,
+					hedge.Field(`0`, `b5`),
 				),
 			),
 		),
 	),
-	debug.Field(`D`, `4`),
-	debug.Nested(`F`,
-		debug.Field(`0`, `5`),
+	hedge.Field(`D`, `4`),
+	hedge.Nested(`F`,
+		hedge.Field(`0`, `5`),
 	),
 }

@@ -20,7 +20,9 @@ import (
 	"testing"
 
 	"github.com/katydid/parser-go-proto/proto/prototests"
+	"github.com/katydid/parser-go/hedge"
 	"github.com/katydid/parser-go/parse/debug"
+	"github.com/katydid/parser-go/rand"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -33,18 +35,18 @@ var proto3Input1 = &prototests.Proto3{
 	Ints: []int64{math.MinInt64},
 }
 
-var proto3Output1 = debug.Nodes{
-	debug.Field(`Field`, `97824789`),
-	debug.Nested(`Msg`,
-		debug.Field(`ScarBusStop`, `cde`),
-		debug.Nested(`FlightParachute`,
-			debug.Field(`0`, `1`),
-			debug.Field(`1`, `2`),
-			debug.Field(`2`, `3`),
+var proto3Output1 = hedge.Hedge{
+	hedge.Field(`Field`, `97824789`),
+	hedge.Nested(`Msg`,
+		hedge.Field(`ScarBusStop`, `cde`),
+		hedge.Nested(`FlightParachute`,
+			hedge.Field(`0`, `1`),
+			hedge.Field(`1`, `2`),
+			hedge.Field(`2`, `3`),
 		),
 	),
-	debug.Nested(`Ints`,
-		debug.Field(`0`, strconv.Itoa(math.MinInt64)),
+	hedge.Nested(`Ints`,
+		hedge.Field(`0`, strconv.Itoa(math.MinInt64)),
 	),
 }
 
@@ -59,7 +61,7 @@ func TestProto31(t *testing.T) {
 	}
 	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(parser)
+	m, err := hedge.ParseInto(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +82,7 @@ func TestRandomProto31(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		p.Init(data)
 		l := debug.NewLogger(p, debug.NewLineLogger())
-		if err := debug.RandomWalk(l, debug.NewRand(), 10, 3); err != nil {
+		if err := debug.RandomWalk(l, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
 	}

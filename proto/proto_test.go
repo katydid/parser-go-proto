@@ -20,8 +20,10 @@ import (
 	protodebug "github.com/katydid/parser-go-proto/debug"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"github.com/katydid/parser-go/expect"
+	"github.com/katydid/parser-go/hedge"
 	"github.com/katydid/parser-go/parse"
 	"github.com/katydid/parser-go/parse/debug"
+	"github.com/katydid/parser-go/rand"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -221,7 +223,7 @@ func TestDebug(t *testing.T) {
 	}
 	p.Init(data)
 	// p = debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(p)
+	m, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -242,7 +244,7 @@ func TestRandomDebug(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		p.Init(data)
 		//l := debug.NewLogger(p, debug.NewLineLogger())
-		if err := debug.RandomWalk(p, debug.NewRand(), 10, 3); err != nil {
+		if err := debug.RandomWalk(p, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
 		//t.Logf("original %v vs random %v", debug.Output, m)
@@ -341,7 +343,7 @@ func TestExtensionsSmallContainer(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	nodes, err := debug.Parse(p)
+	nodes, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -360,7 +362,7 @@ func TestExtensionsBigContainer(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	nodes, err := debug.Parse(p)
+	nodes, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -380,7 +382,7 @@ func TestDebugWithDesc(t *testing.T) {
 	}
 	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(parser)
+	m, err := hedge.ParseInto(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -400,7 +402,7 @@ func TestDebugWithSpecificDesc(t *testing.T) {
 	}
 	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(parser)
+	m, err := hedge.ParseInto(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
