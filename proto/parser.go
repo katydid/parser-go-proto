@@ -22,6 +22,7 @@ import (
 	"strconv"
 
 	"github.com/katydid/parser-go/cast"
+	"github.com/katydid/parser-go/jsonschema"
 	"github.com/katydid/parser-go/parse"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
@@ -37,6 +38,8 @@ type Parser interface {
 	Message() *descriptor.DescriptorProto
 	//Field returns the current field's descriptor.
 	Field() *descriptor.FieldDescriptorProto
+
+	jsonschema.JSONSchemaAble
 }
 
 // NewParser returns a new protocol buffer parser the specific root message.
@@ -62,14 +65,6 @@ func newProtoParser(srcPackage, srcMessage string, opts ...Option) (*parser, err
 
 		stack: make([]state, 0, 10),
 	}, nil
-}
-
-func (p *parser) Message() *descriptor.DescriptorProto {
-	return p.parent
-}
-
-func (p *parser) Field() *descriptor.FieldDescriptorProto {
-	return p.field
 }
 
 type parser struct {
@@ -130,6 +125,36 @@ const inRepeatedFieldState = stateKind('[')
 const inPackedField = stateKind('+')
 const isLeafState = stateKind('l')
 const endState = stateKind('$')
+
+func (p *parser) Message() *descriptor.DescriptorProto {
+	return p.parent
+}
+
+func (p *parser) Field() *descriptor.FieldDescriptorProto {
+	return p.field
+}
+
+func (p *parser) JSONSchemaType() jsonschema.JSONSchemaType {
+	switch p.state.kind {
+	case startState:
+		return jsonschema.JSONSchemaTypeUnknown
+	case inMessageState:
+		return jsonschema.JSONSchemaTypeObject
+	case atFeldState:
+		return jsonschema.JSONSchemaTypeUnknown
+	case isLeafState:
+		return jsonschema.JSONSchemaTypeUnknown
+	case firstRepeatedValueState:
+		return jsonschema.JSONSchemaTypeArray
+	case inRepeatedFieldState:
+		return jsonschema.JSONSchemaTypeUnknown
+	case inPackedField:
+		return jsonschema.JSONSchemaTypeArray
+	case endState:
+		return jsonschema.JSONSchemaTypeObject
+	}
+	panic(fmt.Sprintf("unreachable kind %c", p.state.kind))
+}
 
 func (p *parser) Next() (parse.Hint, error) {
 	p.tokenized = false
