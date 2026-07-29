@@ -137,6 +137,38 @@ func TestDebugBRepeatedStringThenAnotherField(t *testing.T) {
 	expect.EOF(t, p)
 }
 
+func TestDebugBRepeatedStringThenAnotherSkip(t *testing.T) {
+	var p parse.ParserWithInit
+	var err error
+	p, err = NewParser("debug", "Debug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msg := &protodebug.Debug{
+		B: []string{"a", "b"},
+		D: proto.Int32(123),
+	}
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "B")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "a")
+	expect.Hint(t, p, parse.ValueHint)
+	expect.String(t, p, "b")
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "D")
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
 func TestSingleDebugCAMessage(t *testing.T) {
 	var p parse.ParserWithInit
 	var err error
@@ -210,11 +242,10 @@ func TestSingleDebugERepeatedMessage(t *testing.T) {
 	expect.EOF(t, p)
 }
 
-var packedInput1 = &prototests.Packed{
-	Ints: []int64{1, math.MaxInt64, math.MinInt64},
-}
-
-func TestManualPacked1(t *testing.T) {
+func TestPacked1(t *testing.T) {
+	var packedInput1 = &prototests.Packed{
+		Ints: []int64{1, math.MaxInt64, math.MinInt64},
+	}
 	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
@@ -232,6 +263,33 @@ func TestManualPacked1(t *testing.T) {
 	expect.Int(t, p, 1)
 	expect.Hint(t, p, parse.ValueHint)
 	expect.Int(t, p, math.MaxInt64)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, math.MinInt64)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSkipPacked1(t *testing.T) {
+	var packedInput1 = &prototests.Packed{
+		Ints: []int64{1, math.MaxInt64, math.MinInt64},
+	}
+	p, err := NewParser("prototests", "Packed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(packedInput1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "Ints")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 1)
+	expect.NoErr(t, p.Skip)
 	expect.Hint(t, p, parse.ValueHint)
 	expect.Int(t, p, math.MinInt64)
 	expect.Hint(t, p, parse.LeaveHint)

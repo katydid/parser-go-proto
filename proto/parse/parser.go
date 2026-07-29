@@ -120,7 +120,7 @@ type stateKind byte
 
 const startState = stateKind(0)
 const inMessageState = stateKind('m')
-const atFeldState = stateKind('f')
+const atFieldState = stateKind('f')
 const firstRepeatedValueState = stateKind('0')
 const inRepeatedFieldState = stateKind('[')
 const inPackedField = stateKind('+')
@@ -141,7 +141,7 @@ func (p *parser) JSONSchemaType() jsonschema.JSONSchemaType {
 		return jsonschema.JSONSchemaTypeUnknown
 	case inMessageState:
 		return jsonschema.JSONSchemaTypeObject
-	case atFeldState:
+	case atFieldState:
 		return jsonschema.JSONSchemaTypeUnknown
 	case isLeafState:
 		return jsonschema.JSONSchemaTypeUnknown
@@ -164,7 +164,7 @@ func (p *parser) Next() (parse.Hint, error) {
 		return p.nextStart()
 	case inMessageState:
 		return p.nextInMessage()
-	case atFeldState:
+	case atFieldState:
 		return p.nextAtField()
 	case isLeafState:
 		return p.nextIsLeaf()
@@ -210,15 +210,22 @@ func (p *parser) nextInMessage() (parse.Hint, error) {
 	p.field, ok = p.fieldsMap[v]
 	if !ok {
 		// skip unknown field
-		length, err := p.decodeLength(p.wireType)
-		if err != nil {
+		if err := p.skipFieldValue(); err != nil {
 			return parse.UnknownHint, err
 		}
-		p.offset += length
 		return p.Next()
 	}
-	p.state.kind = atFeldState
+	p.state.kind = atFieldState
 	return parse.FieldHint, nil
+}
+
+func (p *parser) skipFieldValue() error {
+	length, err := p.decodeLength(p.wireType)
+	if err != nil {
+		return err
+	}
+	p.offset += length
+	return nil
 }
 
 func (p *parser) nextAtField() (parse.Hint, error) {
@@ -349,7 +356,7 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 	if p.offset == p.endOffset {
 		offset := p.offset
 		if err := p.up(); err != nil {
-			return parse.UnknownHint, nil
+			return parse.UnknownHint, err
 		}
 		// we could not guess the end of the repeated field,
 		// without decoding all of the repeated field,
@@ -366,7 +373,7 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 		// new wire type means we have reached the end of the repeated field
 		offset := p.offset
 		if err := p.up(); err != nil {
-			return parse.UnknownHint, nil
+			return parse.UnknownHint, err
 		}
 		// we could not guess the end of the repeated field,
 		// without decoding all of the repeated field,
@@ -404,6 +411,43 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 		field:    p.field,
 	})
 	return parse.ValueHint, nil
+}
+
+func (p *parser) skipRepeatedField() error {
+	for {
+		if p.offset == p.endOffset {
+			offset := p.offset
+			if err := p.up(); err != nil {
+				return err
+			}
+			// we could not guess the end of the repeated field,
+			// without decoding all of the repeated field,
+			// so we set it now.
+			p.offset = offset
+			return nil
+		}
+		v, n, err := uvarint(p.buf[p.offset:])
+		if err != nil {
+			return err
+		}
+		fieldNumber := int32(v >> 3)
+		if fieldNumber != p.fieldNumber {
+			// new wire type means we have reached the end of the repeated field
+			offset := p.offset
+			if err := p.up(); err != nil {
+				return err
+			}
+			// we could not guess the end of the repeated field,
+			// without decoding all of the repeated field,
+			// so we set it now.
+			p.offset = offset
+			return nil
+		}
+		p.offset += n
+		if err := p.skipFieldValue(); err != nil {
+			return err
+		}
+	}
 }
 
 func (p *parser) nextInPackedField() (parse.Hint, error) {
@@ -462,14 +506,49 @@ func (p *parser) up() error {
 }
 
 func (p *parser) Skip() error {
-	return nil
+	switch p.state.kind {
+	case startState:
+		_, err := p.Next()
+		return err
+	case inMessageState:
+		// we just opened a message or finished parsing a field.
+		// The end offset of the message is known,
+		// so we can skip the whole message by going up.
+		return p.up()
+	case atFieldState:
+		// we just parsed a field, which we can now skip.
+		if err := p.skipFieldValue(); err != nil {
+			return err
+		}
+		p.state.kind = inMessageState
+		return nil
+	case isLeafState:
+		_, err := p.Next()
+		return err
+	case firstRepeatedValueState:
+		if err := p.skipFieldValue(); err != nil {
+			return err
+		}
+		return p.skipRepeatedField()
+	case inRepeatedFieldState:
+		return p.skipRepeatedField()
+	case inPackedField:
+		// we just opened a packed repeated field or finished parsing a item.
+		// The end offset of the packed field is known,
+		// so we can skip the whole repeated field by going up.
+		return p.up()
+	case endState:
+		_, err := p.Next()
+		return err
+	}
+	panic(fmt.Sprintf("unreachable kind %c", p.state.kind))
 }
 
 func (p *parser) Token() (parse.Kind, []byte, error) {
 	switch p.kind {
 	case startState, endState, inMessageState:
 		return parse.UnknownKind, nil, nil
-	case atFeldState:
+	case atFieldState:
 		if p.field != nil && p.field.Name != nil {
 			s := *p.field.Name
 			token := cast.FromString(s, p.alloc)

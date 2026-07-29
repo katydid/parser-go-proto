@@ -78,7 +78,6 @@ func TestSkipRepeated1(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	p = debug.NewLogger(p, debug.NewLineLogger())
 	expect.Hint(t, p, parse.EnterHint)
 	expect.Hint(t, p, parse.FieldHint)
 	expect.String(t, p, "A")
@@ -109,7 +108,6 @@ func TestSkipRepeated2(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	p = debug.NewLogger(p, debug.NewLineLogger())
 	expect.Hint(t, p, parse.EnterHint)
 	expect.Hint(t, p, parse.FieldHint)
 	expect.String(t, p, "A")
@@ -136,7 +134,6 @@ func TestIndexIsNotAString(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	p = debug.NewLogger(p, debug.NewLineLogger())
 	expect.Hint(t, p, parse.EnterHint)
 	expect.Hint(t, p, parse.FieldHint)
 	expect.String(t, p, "A")

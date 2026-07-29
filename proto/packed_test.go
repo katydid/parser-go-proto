@@ -19,7 +19,6 @@ import (
 	"strconv"
 	"testing"
 
-	protoparse "github.com/katydid/parser-go-proto/proto/parse"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"github.com/katydid/parser-go/hedge"
 	"github.com/katydid/parser-go/parse/debug"
@@ -40,7 +39,7 @@ var packedOutput1 = hedge.Hedge{
 }
 
 func TestPacked1(t *testing.T) {
-	p, err := protoparse.NewParser("prototests", "Packed")
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,8 +48,7 @@ func TestPacked1(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := hedge.ParseInto(parser)
+	m, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +58,7 @@ func TestPacked1(t *testing.T) {
 }
 
 func TestRandomPacked1(t *testing.T) {
-	p, err := protoparse.NewParser("prototests", "Packed")
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,8 +68,7 @@ func TestRandomPacked1(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		p.Init(data)
-		l := debug.NewLogger(p, debug.NewLineLogger())
-		if err := debug.RandomWalk(l, rand.NewRand(), 10, 3); err != nil {
+		if err := debug.RandomWalk(p, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -99,7 +96,7 @@ var packedOutput2 = hedge.Hedge{
 }
 
 func TestPacked2(t *testing.T) {
-	p, err := protoparse.NewParser("prototests", "Packed")
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,8 +105,7 @@ func TestPacked2(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Init(data)
-	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := hedge.ParseInto(parser)
+	m, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +115,7 @@ func TestPacked2(t *testing.T) {
 }
 
 func TestRandomPacked2(t *testing.T) {
-	p, err := protoparse.NewParser("prototests", "Packed")
+	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,8 +125,7 @@ func TestRandomPacked2(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		p.Init(data)
-		l := debug.NewLogger(p, debug.NewLineLogger())
-		if err := debug.RandomWalk(l, rand.NewRand(), 10, 3); err != nil {
+		if err := debug.RandomWalk(p, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
 	}
