@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	"github.com/katydid/parser-go-proto/proto/prototests"
-	"github.com/katydid/parser-go/parse/debug"
+	"github.com/katydid/parser-go/hedge"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -38,7 +38,7 @@ func TestBrokenLengthValue(t *testing.T) {
 	}
 	protoParser.Init(data)
 	// make sure the parser doesn't panic and only returns an error.
-	if _, err := debug.Parse(protoParser); err == nil {
+	if _, err := hedge.ParseInto(protoParser); err == nil {
 		t.Fatal("expected error, because of wrong length")
 	}
 }
@@ -63,7 +63,7 @@ func TestBrokenLengthMessage(t *testing.T) {
 	}
 	protoParser.Init(data)
 	// make sure the parser doesn't panic and only returns an error.
-	if _, err := debug.Parse(protoParser); err == nil {
+	if _, err := hedge.ParseInto(protoParser); err == nil {
 		t.Fatal("expected error, because of wrong length")
 	}
 }

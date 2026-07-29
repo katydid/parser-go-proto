@@ -17,7 +17,7 @@ package prototests
 import (
 	"google.golang.org/protobuf/proto"
 
-	"github.com/katydid/parser-go/parse/debug"
+	"github.com/katydid/parser-go/hedge"
 )
 
 // AContainer is a populated Container instance.
@@ -32,16 +32,16 @@ func init() {
 	proto.SetExtension(AContainer, E_FieldC, &Big{BigField: proto.Int64(789)})
 }
 
-// AContainerOutput is a populated Container instance that has been parsed into debug.Nodes.
-var AContainerOutput = debug.Nodes{
-	debug.Field(`FieldA`, `0.123`),
-	debug.Nested(`FieldB`,
-		debug.Field(`SmallField`, `456`),
+// AContainerOutput is a populated Container instance that has been parsed into hedge.Hedge.
+var AContainerOutput = hedge.Hedge{
+	hedge.Field(`FieldA`, `0.123`),
+	hedge.Nested(`FieldB`,
+		hedge.Field(`SmallField`, `456`),
 	),
-	debug.Nested(`FieldC`,
-		debug.Field(`BigField`, `789`),
+	hedge.Nested(`FieldC`,
+		hedge.Field(`BigField`, `789`),
 	),
-	debug.Field(`Field1`, `123`),
+	hedge.Field(`Field1`, `123`),
 }
 
 // ABigContainer is a populated BigContainer instance.
@@ -50,8 +50,8 @@ var ABigContainer = &BigContainer{
 	M:       AContainer,
 }
 
-// ABigContainer is a populated BigContainer instance that has been parsed into debug.Nodes.
-var ABigContainerOutput = debug.Nodes{
-	debug.Nested(`M`, AContainerOutput...),
-	debug.Field(`Field13`, `987`),
+// ABigContainer is a populated BigContainer instance that has been parsed into hedge.Hedge.
+var ABigContainerOutput = hedge.Hedge{
+	hedge.Nested(`M`, AContainerOutput...),
+	hedge.Field(`Field13`, `987`),
 }

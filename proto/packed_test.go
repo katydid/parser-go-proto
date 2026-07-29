@@ -21,8 +21,10 @@ import (
 
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"github.com/katydid/parser-go/expect"
+	"github.com/katydid/parser-go/hedge"
 	"github.com/katydid/parser-go/parse"
 	"github.com/katydid/parser-go/parse/debug"
+	"github.com/katydid/parser-go/rand"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -55,11 +57,11 @@ func TestManualPacked1(t *testing.T) {
 	expect.EOF(t, p)
 }
 
-var packedOutput1 = debug.Nodes{
-	debug.Nested(`Ints`,
-		debug.Field(`0`, `1`),
-		debug.Field(`1`, strconv.Itoa(math.MaxInt64)),
-		debug.Field(`2`, strconv.Itoa(math.MinInt64)),
+var packedOutput1 = hedge.Hedge{
+	hedge.Nested(`Ints`,
+		hedge.Field(`0`, `1`),
+		hedge.Field(`1`, strconv.Itoa(math.MaxInt64)),
+		hedge.Field(`2`, strconv.Itoa(math.MinInt64)),
 	),
 }
 
@@ -74,7 +76,7 @@ func TestPacked1(t *testing.T) {
 	}
 	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(parser)
+	m, err := hedge.ParseInto(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +97,7 @@ func TestRandomPacked1(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		p.Init(data)
 		l := debug.NewLogger(p, debug.NewLineLogger())
-		if err := debug.RandomWalk(l, debug.NewRand(), 10, 3); err != nil {
+		if err := debug.RandomWalk(l, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -107,18 +109,18 @@ var packedInput2 = &prototests.Packed{
 	Uints:  []uint32{3, 4},
 }
 
-var packedOutput2 = debug.Nodes{
-	debug.Nested(`Ints`,
-		debug.Field(`0`, `1`),
-		debug.Field(`1`, strconv.Itoa(math.MaxInt64)),
-		debug.Field(`2`, strconv.Itoa(math.MinInt64)),
+var packedOutput2 = hedge.Hedge{
+	hedge.Nested(`Ints`,
+		hedge.Field(`0`, `1`),
+		hedge.Field(`1`, strconv.Itoa(math.MaxInt64)),
+		hedge.Field(`2`, strconv.Itoa(math.MinInt64)),
 	),
-	debug.Nested(`Floats`,
-		debug.Field(`0`, `0.1`),
+	hedge.Nested(`Floats`,
+		hedge.Field(`0`, `0.1`),
 	),
-	debug.Nested(`Uints`,
-		debug.Field(`0`, `3`),
-		debug.Field(`1`, `4`),
+	hedge.Nested(`Uints`,
+		hedge.Field(`0`, `3`),
+		hedge.Field(`1`, `4`),
 	),
 }
 
@@ -133,7 +135,7 @@ func TestPacked2(t *testing.T) {
 	}
 	p.Init(data)
 	parser := debug.NewLogger(p, debug.NewLineLogger())
-	m, err := debug.Parse(parser)
+	m, err := hedge.ParseInto(parser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,7 +156,7 @@ func TestRandomPacked2(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		p.Init(data)
 		l := debug.NewLogger(p, debug.NewLineLogger())
-		if err := debug.RandomWalk(l, debug.NewRand(), 10, 3); err != nil {
+		if err := debug.RandomWalk(l, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
 	}
