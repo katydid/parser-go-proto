@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package proto
+package parse
 
 func uvarint(buf []byte) (uint64, int, error) {
 	var uv uint64

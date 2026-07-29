@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package proto
+package parse
 
 import (
 	"encoding/binary"
@@ -21,6 +21,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/katydid/parser-go-proto/proto/desc"
 	"github.com/katydid/parser-go/cast"
 	"github.com/katydid/parser-go/jsonschema"
 	"github.com/katydid/parser-go/parse"
@@ -50,7 +51,7 @@ func NewParser(rootPackage, rootMessage string, opts ...Option) (Parser, error) 
 
 func newProtoParser(srcPackage, srcMessage string, opts ...Option) (*parser, error) {
 	o := newOptions(opts...)
-	descMap, err := NewDescriptorMap(srcPackage, srcMessage, o.desc)
+	descMap, err := desc.NewDescriptorMap(srcPackage, srcMessage, o.desc)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ type parser struct {
 	alloc func(size int) []byte
 
 	root          *descriptor.DescriptorProto
-	rootDescMap   DescMap
+	rootDescMap   desc.DescMap
 	rootFieldsMap map[uint64]*descriptor.FieldDescriptorProto
 
 	buf []byte
@@ -221,8 +222,8 @@ func (p *parser) nextInMessage() (parse.Hint, error) {
 }
 
 func (p *parser) nextAtField() (parse.Hint, error) {
-	if IsRepeated(p.field) {
-		if IsScalar(p.field) && p.wireType == 2 { // isPacked
+	if desc.IsRepeated(p.field) {
+		if desc.IsScalar(p.field) && p.wireType == 2 { // isPacked
 			length, err := p.decodeLength(p.wireType)
 			if err != nil {
 				return parse.UnknownHint, err
@@ -238,7 +239,7 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 				endOffset: p.offset,
 
 				fieldNumber: p.fieldNumber,
-				wireType:    WireType(p.field),
+				wireType:    desc.WireType(p.field),
 				field:       p.field,
 			})
 			return parse.EnterHint, nil
@@ -260,7 +261,7 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 			})
 			return parse.EnterHint, nil
 		}
-	} else if IsMessage(p.field) {
+	} else if desc.IsMessage(p.field) {
 		length, err := p.decodeLength(p.wireType)
 		if err != nil {
 			return parse.UnknownHint, err
@@ -315,7 +316,7 @@ func (p *parser) nextFirstRepeatedValueState() (parse.Hint, error) {
 	}
 	offset := p.offset
 	p.offset += length
-	if IsMessage(p.field) {
+	if desc.IsMessage(p.field) {
 		p.state.kind = inRepeatedFieldState
 		newParent := p.rootDescMap.LookupMessage(p.field)
 		newFieldsMap := p.rootDescMap.LookupFields(newParent)
@@ -380,7 +381,7 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 	}
 	offset := p.offset
 	p.offset += length
-	if IsMessage(p.field) {
+	if desc.IsMessage(p.field) {
 		newParent := p.rootDescMap.LookupMessage(p.field)
 		newFieldsMap := p.rootDescMap.LookupFields(newParent)
 		p.down(state{

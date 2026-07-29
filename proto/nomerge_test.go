@@ -23,12 +23,13 @@ import (
 
 	"github.com/katydid/parser-go-proto/debug"
 	protoparser "github.com/katydid/parser-go-proto/proto"
+	"github.com/katydid/parser-go-proto/proto/parse"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"google.golang.org/protobuf/proto"
 )
 
 func noMerge(data []byte, pkgName, msgName string) error {
-	parser, err := protoparser.NewParser(pkgName, msgName)
+	parser, err := parse.NewParser(pkgName, msgName)
 	if err != nil {
 		return err
 	}

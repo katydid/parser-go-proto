@@ -24,7 +24,7 @@ import (
 // NoLatentAppendingOrMerging returns whether the current parser has some latent fields.
 // Latent fields are those fields you have already seen on your walk, but then after seeing a different field you see this field again.
 // This typically happens when the protocol buffer user created an object marshaled it and then merged it with another value.
-func NoLatentAppendingOrMerging(parser Parser) error {
+func NoLatentAppendingOrMerging(parser parse.Parser) error {
 	hint, err := parser.Next()
 	if err != nil {
 		return err
