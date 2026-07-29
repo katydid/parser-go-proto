@@ -97,7 +97,7 @@ type state struct {
 	fieldsMap map[uint64]*descriptor.FieldDescriptorProto
 	kind      stateKind
 	offset    int
-	length    int
+	endOffset int
 	// optional
 	field       *descriptor.FieldDescriptorProto
 	wireType    int
@@ -115,7 +115,7 @@ func (p *parser) Init(buf []byte) {
 		parent:    p.root,
 		fieldsMap: p.rootFieldsMap,
 		offset:    0,
-		length:    len(buf),
+		endOffset: len(buf),
 	}
 	return
 }
@@ -158,13 +158,13 @@ func (p *parser) nextStart() (parse.Hint, error) {
 		fieldsMap: p.fieldsMap,
 		kind:      inMessageState,
 		offset:    p.offset,
-		length:    p.length,
+		endOffset: p.endOffset,
 	})
 	return parse.EnterHint, nil
 }
 
 func (p *parser) nextInMessage() (parse.Hint, error) {
-	if p.offset >= len(p.buf) {
+	if p.offset >= p.endOffset {
 		if err := p.up(); err != nil {
 			return parse.UnknownHint, err
 		}
@@ -203,7 +203,10 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 				fieldsMap: p.fieldsMap,
 				kind:      firstRepeatedValueState,
 				offset:    p.offset,
-				length:    p.length,
+				// We cannot guess the end offset of all the repeated fields,
+				// without decoding all repeated fields,
+				// so we use the old end offset.
+				endOffset: p.endOffset,
 
 				fieldNumber: p.fieldNumber,
 				wireType:    p.wireType,
@@ -219,16 +222,14 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 		offset := p.offset
 		p.offset += length
 		p.state.kind = inMessageState
+		newParent := p.rootDescMap.LookupMessage(p.field)
+		newFieldsMap := p.rootDescMap.LookupFields(newParent)
 		p.down(state{
-			parent:    p.parent,
-			fieldsMap: p.fieldsMap,
+			parent:    newParent,
+			fieldsMap: newFieldsMap,
 			kind:      inMessageState,
 			offset:    offset,
-			length:    length,
-
-			fieldNumber: p.fieldNumber,
-			wireType:    p.wireType,
-			field:       p.field,
+			endOffset: p.offset,
 		})
 		return parse.EnterHint, nil
 	} else {
@@ -244,7 +245,7 @@ func (p *parser) nextAtField() (parse.Hint, error) {
 			fieldsMap: p.fieldsMap,
 			kind:      isLeafState,
 			offset:    offset,
-			length:    length,
+			endOffset: p.offset,
 
 			fieldNumber: p.fieldNumber,
 			wireType:    p.wireType,
@@ -262,22 +263,32 @@ func (p *parser) nextIsLeaf() (parse.Hint, error) {
 }
 
 func (p *parser) nextFirstRepeatedValueState() (parse.Hint, error) {
-	if IsMessage(p.field) {
-		panic("todo")
-	}
 	length, err := p.decodeLength(p.wireType)
 	if err != nil {
 		return parse.UnknownHint, err
 	}
 	offset := p.offset
 	p.offset += length
+	if IsMessage(p.field) {
+		p.state.kind = inRepeatedFieldState
+		newParent := p.rootDescMap.LookupMessage(p.field)
+		newFieldsMap := p.rootDescMap.LookupFields(newParent)
+		p.down(state{
+			parent:    newParent,
+			fieldsMap: newFieldsMap,
+			kind:      inMessageState,
+			offset:    offset,
+			endOffset: p.offset,
+		})
+		return parse.EnterHint, nil
+	}
 	p.state.kind = inRepeatedFieldState
 	p.down(state{
 		parent:    p.parent,
 		fieldsMap: p.fieldsMap,
 		kind:      isLeafState,
 		offset:    offset,
-		length:    length,
+		endOffset: p.offset,
 
 		fieldNumber: p.fieldNumber,
 		wireType:    p.wireType,
@@ -293,6 +304,9 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 		if err := p.up(); err != nil {
 			return parse.UnknownHint, nil
 		}
+		// we could not guess the end of the repeated field,
+		// without decoding all of the repeated field,
+		// so we set it now.
 		p.offset = offset
 		return parse.LeaveHint, nil
 	}
@@ -307,6 +321,9 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 		if err := p.up(); err != nil {
 			return parse.UnknownHint, nil
 		}
+		// we could not guess the end of the repeated field,
+		// without decoding all of the repeated field,
+		// so we set it now.
 		p.offset = offset
 		return parse.LeaveHint, nil
 	}
@@ -317,12 +334,24 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 	}
 	offset := p.offset
 	p.offset += length
+	if IsMessage(p.field) {
+		newParent := p.rootDescMap.LookupMessage(p.field)
+		newFieldsMap := p.rootDescMap.LookupFields(newParent)
+		p.down(state{
+			parent:    newParent,
+			fieldsMap: newFieldsMap,
+			kind:      inMessageState,
+			offset:    offset,
+			endOffset: p.offset,
+		})
+		return parse.EnterHint, nil
+	}
 	p.down(state{
 		parent:    p.parent,
 		fieldsMap: p.fieldsMap,
 		kind:      isLeafState,
 		offset:    offset,
-		length:    length,
+		endOffset: p.offset,
 
 		wireType: p.wireType,
 		field:    p.field,
@@ -553,7 +582,7 @@ func (p *parser) decodeSint64() (int64, error) {
 }
 
 func (p *parser) slice() []byte {
-	return p.buf[p.offset : p.offset+p.length]
+	return p.buf[p.offset:p.endOffset]
 }
 
 func (p *parser) tokenizeVarint(bs []byte) (uint64, error) {
@@ -566,6 +595,6 @@ func (p *parser) tokenizeVarint(bs []byte) (uint64, error) {
 	}
 	p.tokenVarint = v
 	p.tokenized = true
-	p.length = n
+	p.endOffset = p.offset + n
 	return v, nil
 }
