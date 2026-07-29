@@ -12,9 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package proto
+package parse
 
-import descriptor "google.golang.org/protobuf/types/descriptorpb"
+import (
+	"github.com/katydid/parser-go-proto/proto/desc"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
+)
 
 type Option func(*options)
 
@@ -22,24 +25,6 @@ type Option func(*options)
 func WithFileDescriptorSet(desc *descriptor.FileDescriptorSet) Option {
 	return func(o *options) {
 		o.desc = desc
-	}
-}
-
-// WithTags tags
-// 1. each object with an object key, for example `{"a": null}` is parsed as `{"object": {"a": null}}`.
-// 2. each array with an array key, for example `{"a": []}` is parsed as `{"a": {"array": []}}`.
-func WithTags() func(*options) {
-	return func(t *options) {
-		t.tag = true
-	}
-}
-
-// WithIndexes tags each array item with an index:
-// for example `["a", "b"]` is parsed as `[0: "a", 1: "b"]`.
-// Requires WithTags to also be passed as an option.
-func WithIndexes() func(*options) {
-	return func(t *options) {
-		t.index = true
 	}
 }
 
@@ -67,7 +52,7 @@ func newOptions(opts ...Option) *options {
 		opt(o)
 	}
 	if o.desc == nil {
-		o.desc = NewFileDescriptorSet()
+		o.desc = desc.NewFileDescriptorSet()
 	}
 	return o
 }

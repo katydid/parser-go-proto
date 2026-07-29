@@ -17,6 +17,7 @@ package proto
 import (
 	"testing"
 
+	"github.com/katydid/parser-go-proto/proto/parse"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"github.com/katydid/parser-go/hedge"
 	"google.golang.org/protobuf/proto"
@@ -32,7 +33,7 @@ func TestBrokenLengthValue(t *testing.T) {
 	// change string length of first field to be incorrect.
 	data[1] = 12
 	t.Logf("mymessage: %v\n", data)
-	protoParser, err := NewParser("prototests", "mymessage")
+	protoParser, err := parse.NewParser("prototests", "mymessage")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +58,7 @@ func TestBrokenLengthMessage(t *testing.T) {
 	// change string length of first field to be incorrect.
 	data[1] = 12
 	t.Logf("bigmsg: %v\n", data)
-	protoParser, err := NewParser("prototests", "BigMsg")
+	protoParser, err := parse.NewParser("prototests", "BigMsg")
 	if err != nil {
 		t.Fatal(err)
 	}
