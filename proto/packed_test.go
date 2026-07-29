@@ -20,12 +20,39 @@ import (
 	"testing"
 
 	"github.com/katydid/parser-go-proto/proto/prototests"
+	"github.com/katydid/parser-go/expect"
+	"github.com/katydid/parser-go/parse"
 	"github.com/katydid/parser-go/parse/debug"
 	"google.golang.org/protobuf/proto"
 )
 
 var packedInput1 = &prototests.Packed{
 	Ints: []int64{1, math.MaxInt64, math.MinInt64},
+}
+
+func TestManualPacked1(t *testing.T) {
+	p, err := NewParser("prototests", "Packed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(packedInput1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "Ints")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 1)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, math.MaxInt64)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, math.MinInt64)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
 }
 
 var packedOutput1 = debug.Nodes{

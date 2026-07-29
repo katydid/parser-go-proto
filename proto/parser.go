@@ -125,8 +125,9 @@ type stateKind byte
 const startState = stateKind(0)
 const inMessageState = stateKind('m')
 const atFeldState = stateKind('f')
-const inRepeatedFieldState = stateKind('[')
 const firstRepeatedValueState = stateKind('0')
+const inRepeatedFieldState = stateKind('[')
+const inPackedField = stateKind('+')
 const isLeafState = stateKind('l')
 const endState = stateKind('$')
 
@@ -141,10 +142,12 @@ func (p *parser) Next() (parse.Hint, error) {
 		return p.nextAtField()
 	case isLeafState:
 		return p.nextIsLeaf()
-	case inRepeatedFieldState:
-		return p.nextInRepeatedField()
 	case firstRepeatedValueState:
 		return p.nextFirstRepeatedValueState()
+	case inRepeatedFieldState:
+		return p.nextInRepeatedField()
+	case inPackedField:
+		return p.nextInPackedField()
 	case endState:
 		return p.nextEnd()
 	}
@@ -195,7 +198,25 @@ func (p *parser) nextInMessage() (parse.Hint, error) {
 func (p *parser) nextAtField() (parse.Hint, error) {
 	if IsRepeated(p.field) {
 		if IsScalar(p.field) && p.wireType == 2 { // isPacked
-			panic("todo")
+			length, err := p.decodeLength(p.wireType)
+			if err != nil {
+				return parse.UnknownHint, err
+			}
+			offset := p.offset
+			p.offset += length
+			p.state.kind = inMessageState
+			p.down(state{
+				parent:    p.parent,
+				fieldsMap: p.fieldsMap,
+				kind:      inPackedField,
+				offset:    offset,
+				endOffset: p.offset,
+
+				fieldNumber: p.fieldNumber,
+				wireType:    WireType(p.field),
+				field:       p.field,
+			})
+			return parse.EnterHint, nil
 		} else {
 			p.state.kind = inMessageState
 			p.down(state{
@@ -299,7 +320,7 @@ func (p *parser) nextFirstRepeatedValueState() (parse.Hint, error) {
 }
 
 func (p *parser) nextInRepeatedField() (parse.Hint, error) {
-	if p.offset == len(p.buf) {
+	if p.offset == p.endOffset {
 		offset := p.offset
 		if err := p.up(); err != nil {
 			return parse.UnknownHint, nil
@@ -355,6 +376,33 @@ func (p *parser) nextInRepeatedField() (parse.Hint, error) {
 
 		wireType: p.wireType,
 		field:    p.field,
+	})
+	return parse.ValueHint, nil
+}
+
+func (p *parser) nextInPackedField() (parse.Hint, error) {
+	if p.offset == p.endOffset {
+		if err := p.up(); err != nil {
+			return parse.UnknownHint, err
+		}
+		return parse.LeaveHint, nil
+	}
+	length, err := p.decodeLength(p.wireType)
+	if err != nil {
+		return parse.UnknownHint, err
+	}
+	offset := p.offset
+	p.offset += length
+	p.down(state{
+		parent:    p.parent,
+		fieldsMap: p.fieldsMap,
+		kind:      isLeafState,
+		offset:    offset,
+		endOffset: p.offset,
+
+		fieldNumber: p.fieldNumber,
+		wireType:    p.wireType,
+		field:       p.field,
 	})
 	return parse.ValueHint, nil
 }
@@ -501,7 +549,7 @@ func (p *parser) decodeLength(wireType int) (int, error) {
 		return 0, err
 	}
 	p.offset += n
-	if p.offset+l > len(p.buf) {
+	if p.offset+l > p.endOffset {
 		return 0, io.ErrShortBuffer
 	}
 	return l, nil
