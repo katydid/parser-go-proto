@@ -24,6 +24,7 @@ import (
 	"github.com/katydid/parser-go/parse"
 	"github.com/katydid/parser-go/parse/debug"
 	"github.com/katydid/parser-go/rand"
+	"github.com/katydid/parser-go/tag"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -212,7 +213,7 @@ func TestSingleDebugERepeatedMessage(t *testing.T) {
 }
 
 func TestDebug(t *testing.T) {
-	var p parse.ParserWithInit
+	var p parse.Parser
 	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
@@ -221,8 +222,8 @@ func TestDebug(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p.Init(data)
-	// p = debug.NewLogger(p, debug.NewLineLogger())
+	p.(parse.ParserWithInit).Init(data)
+	p = tag.NewTagger(p.(tag.JSONSchemaAbleParser), tag.WithIndexes())
 	m, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
@@ -243,11 +244,9 @@ func TestRandomDebug(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		p.Init(data)
-		//l := debug.NewLogger(p, debug.NewLineLogger())
 		if err := debug.RandomWalk(p, rand.NewRand(), 10, 3); err != nil {
 			t.Fatal(err)
 		}
-		//t.Logf("original %v vs random %v", debug.Output, m)
 	}
 }
 
