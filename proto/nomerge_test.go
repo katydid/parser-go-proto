@@ -23,19 +23,9 @@ import (
 
 	"github.com/katydid/parser-go-proto/debug"
 	protoparser "github.com/katydid/parser-go-proto/proto"
-	"github.com/katydid/parser-go-proto/proto/parse"
 	"github.com/katydid/parser-go-proto/proto/prototests"
 	"google.golang.org/protobuf/proto"
 )
-
-func noMerge(data []byte, pkgName, msgName string) error {
-	parser, err := parse.NewParser(pkgName, msgName)
-	if err != nil {
-		return err
-	}
-	parser.Init(data)
-	return protoparser.NoLatentAppendingOrMerging(parser)
-}
 
 var (
 	r = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -47,7 +37,7 @@ func TestNoMergeNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, "debug", "Debug")
+	err = protoparser.NoLatentAppendingOrMerging("debug", "Debug", data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +52,7 @@ func TestNoMergeMerge(t *testing.T) {
 	}
 	key := byte(uint32(7)<<3 | uint32(1))
 	data = append(data, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, "debug", "Debug")
+	err = protoparser.NoLatentAppendingOrMerging("debug", "Debug", data)
 	if err == nil || !strings.Contains(err.Error(), "G requires merging") {
 		t.Fatalf("G should require merging")
 	}
@@ -78,7 +68,7 @@ func TestNoMergeLatent(t *testing.T) {
 	}
 	key := byte(uint32(6)<<3 | uint32(5))
 	data = append(data, key, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, "debug", "Debug")
+	err = protoparser.NoLatentAppendingOrMerging("debug", "Debug", data)
 	if err == nil || !strings.Contains(err.Error(), "F") {
 		t.Fatalf("F should have latent appending")
 	}
@@ -90,7 +80,7 @@ func TestNoMergeNestedNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, "prototests", "BigMsg")
+	err = protoparser.NoLatentAppendingOrMerging("prototests", "BigMsg", data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +96,7 @@ func TestNoMergeMessageMerge(t *testing.T) {
 	smallMsgfieldKey := byte(uint32(3)<<3 | uint32(2))         // 3 field number, 2 wire type
 	flightParachuteFieldKey := byte(uint32(12)<<3 | uint32(5)) // 12 field number, 5 wire type
 	data = append(data, smallMsgfieldKey, 5, flightParachuteFieldKey, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
-	err = noMerge(data, "prototests", "BigMsg")
+	err = protoparser.NoLatentAppendingOrMerging("prototests", "BigMsg", data)
 	if err == nil || !strings.Contains(err.Error(), "Msg requires merging") {
 		t.Fatalf("Msg should require merging, but got Error: <%v>", err)
 	}
@@ -136,7 +126,7 @@ func TestNoMergeNestedMerge(t *testing.T) {
 	smallMsgfieldKey := byte(uint32(3)<<3 | uint32(2)) // 3 field number, 2 wire type
 	bigdata = append(bigdata, smallMsgfieldKey, byte(len(mdata)))
 	bigdata = append(bigdata, mdata...)
-	err = noMerge(bigdata, "prototests", "BigMsg")
+	err = protoparser.NoLatentAppendingOrMerging("prototests", "BigMsg", bigdata)
 	if err == nil || !strings.Contains(err.Error(), "FlightParachute requires merging") {
 		t.Fatalf("FlightParachute should require merging, but got Error: <%v>", err)
 	}
@@ -148,7 +138,7 @@ func TestNoMergeExtensionNoMerge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = noMerge(data, "prototests", "Container")
+	err = protoparser.NoLatentAppendingOrMerging("prototests", "Container", data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +163,7 @@ func TestNoMergeExtensionMerge(t *testing.T) {
 	n = binary.PutUvarint(datalen, uint64(len(mdata)))
 	datalen = datalen[:n]
 	data = append(data, append(datakey, append(datalen, mdata...)...)...)
-	err = noMerge(data, "prototests", "Container")
+	err = protoparser.NoLatentAppendingOrMerging("prototests", "Container", data)
 	if err == nil || !strings.Contains(err.Error(), "FieldB requires merging") {
 		t.Fatalf("FieldB should require merging, but error is %v", err)
 	}
