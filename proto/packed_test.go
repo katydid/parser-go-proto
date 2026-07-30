@@ -20,7 +20,9 @@ import (
 	"testing"
 
 	"github.com/katydid/parser-go-proto/proto/prototests"
+	"github.com/katydid/parser-go/expect"
 	"github.com/katydid/parser-go/hedge"
+	"github.com/katydid/parser-go/parse"
 	"github.com/katydid/parser-go/parse/debug"
 	"github.com/katydid/parser-go/rand"
 	"google.golang.org/protobuf/proto"
@@ -38,7 +40,7 @@ var packedOutput1 = hedge.Hedge{
 	),
 }
 
-func TestPacked1(t *testing.T) {
+func TestPacked1ParseInto(t *testing.T) {
 	p, err := NewParser("prototests", "Packed")
 	if err != nil {
 		t.Fatal(err)
@@ -55,6 +57,75 @@ func TestPacked1(t *testing.T) {
 	if !m.Equal(packedOutput1) {
 		t.Fatalf("expected %s but got %s", packedOutput1, m)
 	}
+}
+
+func TestSkipPackedField(t *testing.T) {
+	p, err := NewParser("prototests", "Packed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(packedInput1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "Ints")
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSkipPackedItemValues(t *testing.T) {
+	p, err := NewParser("prototests", "Packed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(packedInput1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "Ints")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 0)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 1)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 2)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
+}
+
+func TestSkipPackedItems(t *testing.T) {
+	p, err := NewParser("prototests", "Packed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := proto.Marshal(packedInput1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Init(data)
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.String(t, p, "Ints")
+	expect.Hint(t, p, parse.EnterHint)
+	expect.Hint(t, p, parse.FieldHint)
+	expect.Int(t, p, 0)
+	expect.Hint(t, p, parse.ValueHint)
+	expect.Int(t, p, 1)
+	expect.NoErr(t, p.Skip)
+	expect.Hint(t, p, parse.LeaveHint)
+	expect.EOF(t, p)
 }
 
 func TestRandomPacked1(t *testing.T) {

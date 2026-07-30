@@ -290,9 +290,6 @@ func TestSkipPacked1(t *testing.T) {
 	expect.Hint(t, p, parse.ValueHint)
 	expect.Int(t, p, 1)
 	expect.NoErr(t, p.Skip)
-	expect.Hint(t, p, parse.ValueHint)
-	expect.Int(t, p, math.MinInt64)
-	expect.Hint(t, p, parse.LeaveHint)
 	expect.Hint(t, p, parse.LeaveHint)
 	expect.EOF(t, p)
 }

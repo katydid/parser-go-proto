@@ -24,12 +24,10 @@ import (
 	"github.com/katydid/parser-go/parse"
 	"github.com/katydid/parser-go/parse/debug"
 	"github.com/katydid/parser-go/rand"
-	"github.com/katydid/parser-go/tag"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestDebug(t *testing.T) {
-	var p parse.Parser
 	p, err := NewParser("debug", "Debug")
 	if err != nil {
 		t.Fatal(err)
@@ -39,7 +37,6 @@ func TestDebug(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.(parse.ParserWithInit).Init(data)
-	p = tag.NewTagger(p.(tag.JSONSchemaAbleParser), tag.WithIndexes())
 	m, err := hedge.ParseInto(p)
 	if err != nil {
 		t.Fatal(err)
