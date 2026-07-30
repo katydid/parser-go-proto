@@ -523,8 +523,11 @@ func (p *parser) Skip() error {
 		p.state.kind = inMessageState
 		return nil
 	case isLeafState:
-		_, err := p.Next()
-		return err
+		err := p.up()
+		if err != nil {
+			return err
+		}
+		return p.Skip()
 	case firstRepeatedValueState:
 		if err := p.skipFieldValue(); err != nil {
 			return err
@@ -645,7 +648,7 @@ func (p *parser) Token() (parse.Kind, []byte, error) {
 		}
 		return parse.UnknownKind, nil, errUnknownFieldType
 	}
-	panic(fmt.Sprintf("unreachable %c", p.kind))
+	return parse.UnknownKind, nil, nil
 }
 
 func (p *parser) decodeLength(wireType int) (int, error) {
