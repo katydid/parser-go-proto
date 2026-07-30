@@ -21,10 +21,19 @@ import (
 	"github.com/katydid/parser-go/parse"
 )
 
-// NoLatentAppendingOrMerging returns whether the current parser has some latent fields.
+// NoLatentAppendingOrMerging returns whether the byte buffer has some latent fields.
 // Latent fields are those fields you have already seen on your walk, but then after seeing a different field you see this field again.
-// This typically happens when the protocol buffer user created an object marshaled it and then merged it with another value.
-func NoLatentAppendingOrMerging(parser parse.Parser) error {
+// This typically happens when the protocol buffer user created an object, marshaled it and then merged it with another value.
+func NoLatentAppendingOrMerging(pkgName, msgName string, data []byte) error {
+	parser, err := NewParser(pkgName, msgName)
+	if err != nil {
+		return err
+	}
+	parser.Init(data)
+	return noLatentAppendingOrMerging(parser)
+}
+
+func noLatentAppendingOrMerging(parser parse.Parser) error {
 	hint, err := parser.Next()
 	if err != nil {
 		return err
@@ -59,7 +68,7 @@ func NoLatentAppendingOrMerging(parser parse.Parser) error {
 			}
 			seeni[index] = true
 		}
-		if err := NoLatentAppendingOrMerging(parser); err != nil {
+		if err := noLatentAppendingOrMerging(parser); err != nil {
 			return err
 		}
 	}
