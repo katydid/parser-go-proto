@@ -42,9 +42,14 @@ type parser struct {
 
 // NewParser returns a new Proto parser with indexes.
 // Use this parser with other Katydid tools, such as the validator.
-func NewParser(rootPackage, rootMessage string) (Parser, error) {
+func NewParser(rootPackage, rootMessage string, opts ...Option) (Parser, error) {
+	o := newOptions(opts...)
 	p := pool.New()
-	underlyingParser, err := parse.NewParser(rootPackage, rootMessage, parse.WithAllocator(p.Alloc))
+	pos := []parse.Option{parse.WithAllocator(p.Alloc)}
+	if o.desc != nil {
+		pos = append(pos, parse.WithFileDescriptorSet(o.desc))
+	}
+	underlyingParser, err := parse.NewParser(rootPackage, rootMessage, pos...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +61,14 @@ func NewParser(rootPackage, rootMessage string) (Parser, error) {
 // The following json: `{"a": ["b", "c"]}`
 // is parsed as: `{"object": {"a": {"array": {0: "b", 1: "c"}}}}`.
 // The kind returned from the Token method for "object" and "array" will be parse.TagKind.
-func NewJSONSchemaParser(rootPackage, rootMessage string) (Parser, error) {
+func NewJSONSchemaParser(rootPackage, rootMessage string, opts ...Option) (Parser, error) {
+	o := newOptions(opts...)
 	p := pool.New()
-	underlyingParser, err := parse.NewParser(rootPackage, rootMessage, parse.WithAllocator(p.Alloc))
+	pos := []parse.Option{parse.WithAllocator(p.Alloc)}
+	if o.desc != nil {
+		pos = append(pos, parse.WithFileDescriptorSet(o.desc))
+	}
+	underlyingParser, err := parse.NewParser(rootPackage, rootMessage, pos...)
 	if err != nil {
 		return nil, err
 	}

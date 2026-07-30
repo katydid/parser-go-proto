@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package parse
+package proto
 
 import (
 	"github.com/katydid/parser-go-proto/proto/desc"
@@ -28,24 +28,12 @@ func WithFileDescriptorSet(desc *descriptor.FileDescriptorSet) Option {
 	}
 }
 
-// WithAllocator replaces the default `func(size int) []byte { return make([]byte, size) }` allocator
-// with a different allocator function.
-// Usually an allocator that uses a pool.
-func WithAllocator(alloc func(int) []byte) func(*options) {
-	return func(o *options) {
-		o.alloc = alloc
-	}
-}
-
 type options struct {
-	alloc func(size int) []byte
-	desc  *descriptor.FileDescriptorSet
+	desc *descriptor.FileDescriptorSet
 }
 
 func newOptions(opts ...Option) *options {
-	o := &options{
-		alloc: func(size int) []byte { return make([]byte, size) },
-	}
+	o := &options{}
 	for _, opt := range opts {
 		opt(o)
 	}
