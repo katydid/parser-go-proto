@@ -38,62 +38,55 @@ The new process can construct the parser for the marshaled bytes:
 
 ```go
 import (
-    "github.com/katydid/parser-go/parser"
+    "github.com/katydid/parser-go/parse"
     "github.com/katydid/parser-go-proto/proto"
 )
 
-func NewMyMessageParser(marshaledMyMessage []byte) (parser.Interface, error) {
-	mymessageParser, err := proto.NewParser("mypackage", "mymessage")
+func NewMyMessageParser(marshaledMyMessage []byte) (parse.Parser, error) {
+	protoParser, err := protoparser.NewParser("prototests", "mymessage")
 	if err != nil {
 		return nil, err
 	}
-	if err := mymessageParser.Init(marshaledMyMessage); err != nil {
-		return nil, err
-	}
-	return mymessageParser, nil
+	protoParser.Init(marshaledMyMessage)
+	return protoParser, nil
 }
 ```
 
 We can then use the parser to decode only `myfield` and skip over other fields and return `"myvalue"`:
 
 ```go
-func GetMyField(p parser.Interface) (string, error) {
+func GetMyField(p parse.Parser) (string, error) {
+	if hint, err := p.Next(); err != nil || hint != parse.EnterHint {
+		return "", err
+	}
 	for {
-		// Next parses up to the next field.
-		if err := p.Next(); err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				return "", err
-			}
-		}
-		// String returns the field name.
-		fieldName, err := p.String()
-		if err != nil {
+		if hint, err := p.Next(); err != nil || hint != parse.FieldHint {
 			return "", err
 		}
-		if fieldName != "myfield" {
-			continue
+		kind, val, err := p.Token()
+		if err != nil || kind != parse.StringKind {
+			return "", err
 		}
-		// Down traverse into the field, so we can get to the field value, which could be another message.
-		p.Down()
-		// Next should always be called after Down, since it needs to start parsing the first field.
-		if err := p.Next(); err != nil {
-			if err == io.EOF {
-				break
-			} else {
+		fieldName := cast.ToString(val) // cast, do not copy
+		if fieldName != "myfield" {
+			if err := p.Skip(); err != nil {
 				return "", err
 			}
+			continue
 		}
-		// String can also be used to return values of type string.
-		// It returns an error if this is called on a non string type, like int64.
-		return p.String()
+		if hint, err := p.Next(); err != nil || hint != parse.ValueHint {
+			return "", err
+		}
+		kind, val, err = p.Token()
+		if err != nil || kind != parse.StringKind {
+			return "", err
+		}
+		return string(val), nil
 	}
-	return "", nil
 }
 ```
 
-For more details on how to use the parser's methods like Next, Up and Down see the [Parser Interface](https://github.com/katydid/parser-go).
+For more details on how to use the parser's methods like Next, Skip and Token see the [Parser Interface](https://github.com/katydid/parser-go).
 
 ## Known Issues
 
