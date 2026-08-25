@@ -18,12 +18,12 @@ import (
 	"math"
 	"testing"
 
-	protodebug "github.com/katydid/parser-go-proto/debug"
-	"github.com/katydid/parser-go-proto/proto/desc"
-	"github.com/katydid/parser-go-proto/proto/prototests"
-	"github.com/katydid/parser-go/expect"
-	"github.com/katydid/parser-go/parse"
 	"google.golang.org/protobuf/proto"
+	protodebug "katydid.org.za/go/parser-go-proto/debug"
+	"katydid.org.za/go/parser-go-proto/proto/desc"
+	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"katydid.org.za/go/parser-go/expect"
+	"katydid.org.za/go/parser-go/parse"
 )
 
 func TestSingleDebugAInt(t *testing.T) {

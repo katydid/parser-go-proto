@@ -38,8 +38,8 @@ The new process can construct the parser for the marshaled bytes:
 
 ```go
 import (
-    "github.com/katydid/parser-go/parse"
-    "github.com/katydid/parser-go-proto/proto"
+    "katydid.org.za/go/parser-go/parse"
+    "katydid.org.za/go/parser-go-proto/proto"
 )
 
 func NewMyMessageParser(marshaledMyMessage []byte) (parse.Parser, error) {
@@ -86,7 +86,7 @@ func GetMyField(p parse.Parser) (string, error) {
 }
 ```
 
-For more details on how to use the parser's methods like Next, Skip and Token see the [Parser Interface](https://github.com/katydid/parser-go).
+For more details on how to use the parser's methods like Next, Skip and Token see the [Parser Interface](https://git.katydid.org.za/parser-go).
 
 ## Known Issues
 

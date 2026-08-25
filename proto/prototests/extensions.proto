@@ -15,7 +15,7 @@
 syntax = "proto2";
 package prototests;
 
-option go_package = "github.com/katydid/parser-go-proto/proto/prototests";
+option go_package = "katydid.org.za/go/parser-go-proto/proto/prototests";
 
 //Container contains a field and some extensions.
 message Container {

@@ -9,26 +9,26 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        path: gopath/src/github.com/katydid/parser-go-proto
+        path: gopath/src/katydid.org.za/go/parser-go-proto
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
         go-version: 1.26
     - name: Fetch dependencies
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         go mod download -x
     - name: Install tools
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         go install -x google.golang.org/protobuf/cmd/protoc-gen-go
     - name: Setup protoc
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         ./install_protoc.sh
     - name: Protoc version
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         PATH=$HOME/bin:$PATH protoc --version
     - name: env
       run: env && go env && pwd
@@ -36,19 +36,19 @@ jobs:
       run: tree
     - name: Generate
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         PATH=$HOME/bin:$PATH make regenerate
     - name: Build
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         make build
     - name: Test
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         make test
     - name: Test PureGo
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         make test-purego
     - name: Checklicencse
       uses: awalterschulze/checklicense@v1.0.6
@@ -57,5 +57,5 @@ jobs:
         ignores: doc.go .svg .txt .drawio install_protoc.sh debug/debug.proto
     - name: Diff
       run: |
-        cd gopath/src/github.com/katydid/parser-go-proto
+        cd gopath/src/katydid.org.za/go/parser-go-proto
         make diff

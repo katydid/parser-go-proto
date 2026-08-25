@@ -15,8 +15,8 @@
 package parse
 
 import (
-	"github.com/katydid/parser-go-proto/proto/desc"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
+	"katydid.org.za/go/parser-go-proto/proto/desc"
 )
 
 type Option func(*options)

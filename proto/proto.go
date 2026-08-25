@@ -16,10 +16,10 @@
 package proto
 
 import (
-	"github.com/katydid/parser-go-proto/proto/parse"
-	goparse "github.com/katydid/parser-go/parse"
-	"github.com/katydid/parser-go/pool"
-	"github.com/katydid/parser-go/tag"
+	"katydid.org.za/go/parser-go-proto/proto/parse"
+	goparse "katydid.org.za/go/parser-go/parse"
+	"katydid.org.za/go/parser-go/pool"
+	"katydid.org.za/go/parser-go/tag"
 )
 
 type Parser interface {

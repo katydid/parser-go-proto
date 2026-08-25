@@ -17,10 +17,10 @@ package prototests
 import (
 	"testing"
 
-	protoparser "github.com/katydid/parser-go-proto/proto"
-	"github.com/katydid/parser-go/cast"
-	"github.com/katydid/parser-go/parse"
 	"google.golang.org/protobuf/proto"
+	protoparser "katydid.org.za/go/parser-go-proto/proto"
+	"katydid.org.za/go/parser-go/cast"
+	"katydid.org.za/go/parser-go/parse"
 )
 
 func NewMarshaledMyMessage() ([]byte, error) {

@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package debug;
 
-option go_package = "github.com/katydid/parser-go-proto/debug";
+option go_package = "katydid.org.za/go/parser-go-proto/debug";
 
 message Debug {
   optional int64 A = 1;

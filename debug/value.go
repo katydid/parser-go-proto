@@ -15,7 +15,7 @@
 package debug
 
 import (
-	"github.com/katydid/parser-go/parser"
+	"katydid.org.za/go/parser-go/parser"
 )
 
 type errValue struct{}

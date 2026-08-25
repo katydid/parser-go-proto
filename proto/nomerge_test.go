@@ -21,10 +21,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/katydid/parser-go-proto/debug"
-	protoparser "github.com/katydid/parser-go-proto/proto"
-	"github.com/katydid/parser-go-proto/proto/prototests"
 	"google.golang.org/protobuf/proto"
+	"katydid.org.za/go/parser-go-proto/debug"
+	protoparser "katydid.org.za/go/parser-go-proto/proto"
+	"katydid.org.za/go/parser-go-proto/proto/prototests"
 )
 
 var (

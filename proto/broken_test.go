@@ -17,10 +17,10 @@ package proto
 import (
 	"testing"
 
-	"github.com/katydid/parser-go-proto/proto/parse"
-	"github.com/katydid/parser-go-proto/proto/prototests"
-	"github.com/katydid/parser-go/hedge"
 	"google.golang.org/protobuf/proto"
+	"katydid.org.za/go/parser-go-proto/proto/parse"
+	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"katydid.org.za/go/parser-go/hedge"
 )
 
 func TestBrokenLengthValue(t *testing.T) {

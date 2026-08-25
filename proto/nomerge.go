@@ -18,7 +18,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/katydid/parser-go/parse"
+	"katydid.org.za/go/parser-go/parse"
 )
 
 // NoLatentAppendingOrMerging returns whether the byte buffer has some latent fields.

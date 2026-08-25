@@ -17,14 +17,14 @@ package proto
 import (
 	"testing"
 
-	protodebug "github.com/katydid/parser-go-proto/debug"
-	"github.com/katydid/parser-go-proto/proto/prototests"
-	"github.com/katydid/parser-go/expect"
-	"github.com/katydid/parser-go/hedge"
-	"github.com/katydid/parser-go/parse"
-	"github.com/katydid/parser-go/parse/debug"
-	"github.com/katydid/parser-go/rand"
 	"google.golang.org/protobuf/proto"
+	protodebug "katydid.org.za/go/parser-go-proto/debug"
+	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"katydid.org.za/go/parser-go/expect"
+	"katydid.org.za/go/parser-go/hedge"
+	"katydid.org.za/go/parser-go/parse"
+	"katydid.org.za/go/parser-go/parse/debug"
+	"katydid.org.za/go/parser-go/rand"
 )
 
 func TestDebug(t *testing.T) {
