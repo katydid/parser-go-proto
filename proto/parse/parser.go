@@ -82,6 +82,11 @@ type parser struct {
 
 	tokenized   bool
 	tokenVarint uint64
+	tokenStr    string
+	tokenInt32  int32
+	tokenInt64  int64
+	tokenUint64 uint64
+	tokenUint32 uint32
 
 	state
 	stack []state
@@ -553,8 +558,7 @@ func (p *parser) Token() (parse.Kind, []byte, error) {
 		return parse.UnknownKind, nil, nil
 	case atFieldState:
 		if p.field != nil && p.field.Name != nil {
-			s := *p.field.Name
-			token := cast.FromString(s, p.alloc)
+			token := cast.FromStringPtr(p.field.Name, p.alloc)
 			return parse.StringKind, token, nil
 		}
 		return parse.UnknownKind, nil, nil
@@ -565,70 +569,82 @@ func (p *parser) Token() (parse.Kind, []byte, error) {
 			token := p.slice()
 			return parse.Float64Kind, token, nil
 		case descriptor.FieldDescriptorProto_TYPE_FLOAT:
-			f32 := cast.ToFloat32(p.slice())
-			token := cast.FromFloat64(float64(f32), p.alloc)
+			cast.ToFloat32BitsPtr(p.slice(), &p.tokenUint32)
+			p.tokenUint64 = uint64(p.tokenUint32)
+			token := cast.FromFloat64BitsPtr(&p.tokenUint64, p.alloc)
 			return parse.Float64Kind, token, nil
 		case descriptor.FieldDescriptorProto_TYPE_INT64:
-			i64, err := p.decodeInt64()
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt64, err = p.decodeInt64()
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-			i64, err := p.decodeSfixed64()
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt64, err = p.decodeSfixed64()
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_SINT64:
-			i64, err := p.decodeSint64()
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt64, err = p.decodeSint64()
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_INT32:
-			i32, err := p.decodeInt32()
-			i64 := int64(i32)
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt32, err = p.decodeInt32()
+			p.tokenInt64 = int64(p.tokenInt32)
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-			i32, err := p.decodeSfixed32()
-			i64 := int64(i32)
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt32, err = p.decodeSfixed32()
+			p.tokenInt64 = int64(p.tokenInt32)
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_SINT32:
-			i32, err := p.decodeSint32()
-			i64 := int64(i32)
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt32, err = p.decodeSint32()
+			p.tokenInt64 = int64(p.tokenInt32)
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_ENUM:
-			i32, err := p.decodeInt32()
-			i64 := int64(i32)
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenInt32, err = p.decodeInt32()
+			p.tokenInt64 = int64(p.tokenInt32)
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_UINT64:
-			u64, err := p.decodeUint64()
-			if u64 <= math.MaxInt64 {
-				i64 := int64(u64)
-				token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenUint64, err = p.decodeUint64()
+			if p.tokenUint64 <= math.MaxInt64 {
+				p.tokenInt64 = int64(p.tokenUint64)
+				token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 				return parse.Int64Kind, token, err
 			}
-			s := strconv.FormatUint(u64, 10)
-			token := cast.FromString(s, p.alloc)
+			p.tokenStr = strconv.FormatUint(p.tokenUint64, 10)
+			token := cast.FromStringPtr(&p.tokenStr, p.alloc)
 			return parse.DecimalKind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_FIXED64:
-			u64, err := p.decodeFixed64()
-			if u64 <= math.MaxInt64 {
-				i64 := int64(u64)
-				token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenUint64, err = p.decodeFixed64()
+			if p.tokenUint64 <= math.MaxInt64 {
+				p.tokenInt64 = int64(p.tokenUint64)
+				token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 				return parse.Int64Kind, token, err
 			}
-			s := strconv.FormatUint(u64, 10)
-			token := cast.FromString(s, p.alloc)
+			p.tokenStr = strconv.FormatUint(p.tokenUint64, 10)
+			token := cast.FromStringPtr(&p.tokenStr, p.alloc)
 			return parse.DecimalKind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_UINT32:
-			u32, err := p.decodeUint32()
-			i64 := int64(u32)
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenUint32, err = p.decodeUint32()
+			p.tokenInt64 = int64(p.tokenUint32)
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_FIXED32:
-			u32, err := p.decodeFixed32()
-			i64 := int64(u32)
-			token := cast.FromInt64(i64, p.alloc)
+			var err error
+			p.tokenUint32, err = p.decodeFixed32()
+			p.tokenInt64 = int64(p.tokenUint32)
+			token := cast.FromInt64Ptr(&p.tokenInt64, p.alloc)
 			return parse.Int64Kind, token, err
 		case descriptor.FieldDescriptorProto_TYPE_BOOL:
 			v, err := p.decodeBool()
@@ -692,7 +708,8 @@ func (p *parser) decodeFixed64() (uint64, error) {
 	if len(buf) < 8 {
 		return 0, io.ErrShortBuffer
 	}
-	return cast.ToUint64(buf), nil
+	cast.ToUint64Ptr(buf, &p.tokenUint64)
+	return p.tokenUint64, nil
 }
 
 func (p *parser) decodeFixed32() (uint32, error) {
@@ -700,7 +717,8 @@ func (p *parser) decodeFixed32() (uint32, error) {
 	if len(buf) < 4 {
 		return 0, io.ErrShortBuffer
 	}
-	return cast.ToUint32(buf), nil
+	cast.ToUint32Ptr(buf, &p.tokenUint32)
+	return p.tokenUint32, nil
 }
 
 func (p *parser) decodeUint32() (uint32, error) {
@@ -714,7 +732,8 @@ func (p *parser) decodeSfixed32() (int32, error) {
 	if len(buf) < 4 {
 		return 0, io.ErrShortBuffer
 	}
-	return cast.ToInt32(buf), nil
+	cast.ToInt32Ptr(buf, &p.tokenInt32)
+	return p.tokenInt32, nil
 }
 
 func (p *parser) decodeSfixed64() (int64, error) {
@@ -722,7 +741,8 @@ func (p *parser) decodeSfixed64() (int64, error) {
 	if len(buf) < 8 {
 		return 0, io.ErrShortBuffer
 	}
-	return cast.ToInt64(buf), nil
+	cast.ToInt64Ptr(buf, &p.tokenInt64)
+	return p.tokenInt64, nil
 }
 
 func (p *parser) decodeSint32() (int32, error) {

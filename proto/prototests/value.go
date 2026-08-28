@@ -34,14 +34,14 @@ func init() {
 
 // AContainerOutput is a populated Container instance that has been parsed into hedge.Hedge.
 var AContainerOutput = hedge.Hedge{
-	hedge.Field(`FieldA`, `0.123`),
-	hedge.Nested(`FieldB`,
-		hedge.Field(`SmallField`, `456`),
-	),
-	hedge.Nested(`FieldC`,
-		hedge.Field(`BigField`, `789`),
-	),
-	hedge.Field(`Field1`, `123`),
+	{Label: hedge.NewStringToken("FieldA"), Children: hedge.Hedge{{Label: hedge.NewFloat64Token(0.123), Children: nil}}},
+	{Label: hedge.NewStringToken("FieldB"), Children: hedge.Hedge{
+		{Label: hedge.NewStringToken("SmallField"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(456), Children: nil}}},
+	}},
+	{Label: hedge.NewStringToken("FieldC"), Children: hedge.Hedge{
+		{Label: hedge.NewStringToken("BigField"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(789), Children: nil}}},
+	}},
+	{Label: hedge.NewStringToken("Field1"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(123), Children: nil}}},
 }
 
 // ABigContainer is a populated BigContainer instance.
@@ -52,6 +52,6 @@ var ABigContainer = &BigContainer{
 
 // ABigContainer is a populated BigContainer instance that has been parsed into hedge.Hedge.
 var ABigContainerOutput = hedge.Hedge{
-	hedge.Nested(`M`, AContainerOutput...),
-	hedge.Field(`Field13`, `987`),
+	{Label: hedge.NewStringToken("M"), Children: AContainerOutput},
+	{Label: hedge.NewStringToken("Field13"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(987), Children: nil}}},
 }

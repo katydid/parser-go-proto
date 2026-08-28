@@ -45,11 +45,12 @@ func GetMyField(p parse.Parser) (string, error) {
 		if hint, err := p.Next(); err != nil || hint != parse.FieldHint {
 			return "", err
 		}
-		kind, val, err := p.Token()
+		kind, fieldNameBytes, err := p.Token()
 		if err != nil || kind != parse.StringKind {
 			return "", err
 		}
-		fieldName := cast.ToString(val) // cast, do not copy
+		var fieldName string
+		cast.ToStringPtr(fieldNameBytes, &fieldName) // cast, do not copy
 		if fieldName != "myfield" {
 			if err := p.Skip(); err != nil {
 				return "", err
@@ -59,7 +60,7 @@ func GetMyField(p parse.Parser) (string, error) {
 		if hint, err := p.Next(); err != nil || hint != parse.ValueHint {
 			return "", err
 		}
-		kind, val, err = p.Token()
+		kind, val, err := p.Token()
 		if err != nil || kind != parse.StringKind {
 			return "", err
 		}

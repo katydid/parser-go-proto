@@ -16,7 +16,6 @@ package proto
 
 import (
 	"math"
-	"strconv"
 	"testing"
 
 	"google.golang.org/protobuf/proto"
@@ -36,18 +35,18 @@ var proto3Input1 = &prototests.Proto3{
 }
 
 var proto3Output1 = hedge.Hedge{
-	hedge.Field(`Field`, `97824789`),
-	hedge.Nested(`Msg`,
-		hedge.Field(`ScarBusStop`, `cde`),
-		hedge.Nested(`FlightParachute`,
-			hedge.Field(`0`, `1`),
-			hedge.Field(`1`, `2`),
-			hedge.Field(`2`, `3`),
-		),
-	),
-	hedge.Nested(`Ints`,
-		hedge.Field(`0`, strconv.Itoa(math.MinInt64)),
-	),
+	{Label: hedge.NewStringToken("Field"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(97824789), Children: nil}}},
+	{Label: hedge.NewStringToken("Msg"), Children: hedge.Hedge{
+		{Label: hedge.NewStringToken("ScarBusStop"), Children: hedge.Hedge{{Label: hedge.NewStringToken("cde"), Children: nil}}},
+		{Label: hedge.NewStringToken("FlightParachute"), Children: hedge.Hedge{
+			{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
+			{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(2), Children: nil}}},
+			{Label: hedge.NewInt64Token(2), Children: hedge.Hedge{{Label: hedge.NewInt64Token(3), Children: nil}}},
+		}},
+	}},
+	{Label: hedge.NewStringToken("Ints"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MinInt64), Children: nil}}},
+	}},
 }
 
 func TestProto31(t *testing.T) {

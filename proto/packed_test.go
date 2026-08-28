@@ -16,7 +16,6 @@ package proto
 
 import (
 	"math"
-	"strconv"
 	"testing"
 
 	"google.golang.org/protobuf/proto"
@@ -33,11 +32,11 @@ var packedInput1 = &prototests.Packed{
 }
 
 var packedOutput1 = hedge.Hedge{
-	hedge.Nested(`Ints`,
-		hedge.Field(`0`, `1`),
-		hedge.Field(`1`, strconv.Itoa(math.MaxInt64)),
-		hedge.Field(`2`, strconv.Itoa(math.MinInt64)),
-	),
+	{Label: hedge.NewStringToken("Ints"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
+		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MaxInt64), Children: nil}}},
+		{Label: hedge.NewInt64Token(2), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MinInt64), Children: nil}}},
+	}},
 }
 
 func TestPacked1ParseInto(t *testing.T) {
@@ -152,18 +151,18 @@ var packedInput2 = &prototests.Packed{
 }
 
 var packedOutput2 = hedge.Hedge{
-	hedge.Nested(`Ints`,
-		hedge.Field(`0`, `1`),
-		hedge.Field(`1`, strconv.Itoa(math.MaxInt64)),
-		hedge.Field(`2`, strconv.Itoa(math.MinInt64)),
-	),
-	hedge.Nested(`Floats`,
-		hedge.Field(`0`, `0.1`),
-	),
-	hedge.Nested(`Uints`,
-		hedge.Field(`0`, `3`),
-		hedge.Field(`1`, `4`),
-	),
+	{Label: hedge.NewStringToken("Ints"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
+		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MaxInt64), Children: nil}}},
+		{Label: hedge.NewInt64Token(2), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MinInt64), Children: nil}}},
+	}},
+	{Label: hedge.NewStringToken("Floats"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewFloat64Token(0.1), Children: nil}}},
+	}},
+	{Label: hedge.NewStringToken("Uints"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(3), Children: nil}}},
+		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(4), Children: nil}}},
+	}},
 }
 
 func TestPacked2(t *testing.T) {

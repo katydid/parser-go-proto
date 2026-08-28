@@ -42,29 +42,29 @@ var Input = &Debug{
 
 // Output is a sample instance of Nodes that repesents the Input variable after it has been parsed by Walk.
 var Output = hedge.Hedge{
-	hedge.Field(`A`, `1`),
-	hedge.Nested(`B`,
-		hedge.Field(`0`, `b2`),
-		hedge.Field(`1`, `b3`),
-	),
-	hedge.Nested(`C`,
-		hedge.Field(`A`, `2`),
-		hedge.Field(`D`, `3`),
-		hedge.Nested(`E`,
-			hedge.Nested(`0`,
-				hedge.Nested(`B`,
-					hedge.Field(`0`, `b4`),
-				),
-			),
-			hedge.Nested(`1`,
-				hedge.Nested(`B`,
-					hedge.Field(`0`, `b5`),
-				),
-			),
-		),
-	),
-	hedge.Field(`D`, `4`),
-	hedge.Nested(`F`,
-		hedge.Field(`0`, `5`),
-	),
+	{Label: hedge.NewStringToken("A"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
+	{Label: hedge.NewStringToken("B"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewStringToken("b2"), Children: nil}}},
+		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewStringToken("b3"), Children: nil}}},
+	}},
+	{Label: hedge.NewStringToken("C"), Children: hedge.Hedge{
+		{Label: hedge.NewStringToken("A"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(2), Children: nil}}},
+		{Label: hedge.NewStringToken("D"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(3), Children: nil}}},
+		{Label: hedge.NewStringToken("E"), Children: hedge.Hedge{
+			{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{
+				{Label: hedge.NewStringToken("B"), Children: hedge.Hedge{
+					{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewStringToken("b4"), Children: nil}}},
+				}},
+			}},
+			{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{
+				{Label: hedge.NewStringToken("B"), Children: hedge.Hedge{
+					{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewStringToken("b5"), Children: nil}}},
+				}},
+			}},
+		}},
+	}},
+	{Label: hedge.NewStringToken("D"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(4), Children: nil}}},
+	{Label: hedge.NewStringToken("F"), Children: hedge.Hedge{
+		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(5), Children: nil}}},
+	}},
 }
