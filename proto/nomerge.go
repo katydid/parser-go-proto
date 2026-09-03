@@ -15,9 +15,9 @@
 package proto
 
 import (
-	"encoding/binary"
 	"fmt"
 
+	"katydid.org.za/go/parser-go/cp"
 	"katydid.org.za/go/parser-go/parse"
 )
 
@@ -56,13 +56,13 @@ func noLatentAppendingOrMerging(parser parse.Parser) error {
 		}
 		switch kind {
 		case parse.StringKind:
-			fieldName := string(val)
+			fieldName := cp.ToString(val)
 			if _, ok := seen[fieldName]; ok {
 				return fmt.Errorf("%s requires merging", fieldName)
 			}
 			seen[fieldName] = true
 		case parse.Int64Kind:
-			index := int64(binary.LittleEndian.Uint64(val))
+			index := cp.ToInt64(val)
 			if _, ok := seeni[index]; ok {
 				return fmt.Errorf("%d requires merging", index)
 			}
