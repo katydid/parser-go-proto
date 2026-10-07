@@ -20,10 +20,10 @@ import (
 	"google.golang.org/protobuf/proto"
 	protodebug "katydid.org.za/go/parser-go-proto/debug"
 	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"katydid.org.za/go/parser-go/debug"
 	"katydid.org.za/go/parser-go/expect"
 	"katydid.org.za/go/parser-go/hedge"
 	"katydid.org.za/go/parser-go/parse"
-	"katydid.org.za/go/parser-go/parse/debug"
 	"katydid.org.za/go/parser-go/rand"
 )
 

@@ -20,10 +20,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"katydid.org.za/go/parser-go/debug"
 	"katydid.org.za/go/parser-go/expect"
 	"katydid.org.za/go/parser-go/hedge"
 	"katydid.org.za/go/parser-go/parse"
-	"katydid.org.za/go/parser-go/parse/debug"
 	"katydid.org.za/go/parser-go/rand"
 )
 
@@ -32,11 +32,11 @@ var packedInput1 = &prototests.Packed{
 }
 
 var packedOutput1 = hedge.Hedge{
-	{Label: hedge.NewStringToken("Ints"), Children: hedge.Hedge{
-		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
-		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MaxInt64), Children: nil}}},
-		{Label: hedge.NewInt64Token(2), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MinInt64), Children: nil}}},
-	}},
+	hedge.NewStringNode("Ints",
+		hedge.NewInt64Node(0, hedge.NewInt64Node(1)),
+		hedge.NewInt64Node(1, hedge.NewInt64Node(math.MaxInt64)),
+		hedge.NewInt64Node(2, hedge.NewInt64Node(math.MinInt64)),
+	),
 }
 
 func TestPacked1ParseInto(t *testing.T) {
@@ -151,18 +151,18 @@ var packedInput2 = &prototests.Packed{
 }
 
 var packedOutput2 = hedge.Hedge{
-	{Label: hedge.NewStringToken("Ints"), Children: hedge.Hedge{
-		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
-		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MaxInt64), Children: nil}}},
-		{Label: hedge.NewInt64Token(2), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MinInt64), Children: nil}}},
-	}},
-	{Label: hedge.NewStringToken("Floats"), Children: hedge.Hedge{
-		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewFloat64Token(0.1), Children: nil}}},
-	}},
-	{Label: hedge.NewStringToken("Uints"), Children: hedge.Hedge{
-		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(3), Children: nil}}},
-		{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(4), Children: nil}}},
-	}},
+	hedge.NewStringNode("Ints",
+		hedge.NewInt64Node(0, hedge.NewInt64Node(1)),
+		hedge.NewInt64Node(1, hedge.NewInt64Node(math.MaxInt64)),
+		hedge.NewInt64Node(2, hedge.NewInt64Node(math.MinInt64)),
+	),
+	hedge.NewStringNode("Floats",
+		hedge.NewInt64Node(0, hedge.NewFloat64Node(0.1)),
+	),
+	hedge.NewStringNode("Uints",
+		hedge.NewInt64Node(0, hedge.NewInt64Node(3)),
+		hedge.NewInt64Node(1, hedge.NewInt64Node(4)),
+	),
 }
 
 func TestPacked2(t *testing.T) {

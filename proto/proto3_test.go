@@ -20,8 +20,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"katydid.org.za/go/parser-go/debug"
 	"katydid.org.za/go/parser-go/hedge"
-	"katydid.org.za/go/parser-go/parse/debug"
 	"katydid.org.za/go/parser-go/rand"
 )
 
@@ -35,18 +35,16 @@ var proto3Input1 = &prototests.Proto3{
 }
 
 var proto3Output1 = hedge.Hedge{
-	{Label: hedge.NewStringToken("Field"), Children: hedge.Hedge{{Label: hedge.NewInt64Token(97824789), Children: nil}}},
-	{Label: hedge.NewStringToken("Msg"), Children: hedge.Hedge{
-		{Label: hedge.NewStringToken("ScarBusStop"), Children: hedge.Hedge{{Label: hedge.NewStringToken("cde"), Children: nil}}},
-		{Label: hedge.NewStringToken("FlightParachute"), Children: hedge.Hedge{
-			{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(1), Children: nil}}},
-			{Label: hedge.NewInt64Token(1), Children: hedge.Hedge{{Label: hedge.NewInt64Token(2), Children: nil}}},
-			{Label: hedge.NewInt64Token(2), Children: hedge.Hedge{{Label: hedge.NewInt64Token(3), Children: nil}}},
-		}},
-	}},
-	{Label: hedge.NewStringToken("Ints"), Children: hedge.Hedge{
-		{Label: hedge.NewInt64Token(0), Children: hedge.Hedge{{Label: hedge.NewInt64Token(math.MinInt64), Children: nil}}},
-	}},
+	hedge.NewStringNode("Field", hedge.NewInt64Node(97824789)),
+	hedge.NewStringNode("Msg",
+		hedge.NewStringNode("ScarBusStop", hedge.NewStringNode("cde")),
+		hedge.NewStringNode("FlightParachute",
+			hedge.NewInt64Node(0, hedge.NewInt64Node(1)),
+			hedge.NewInt64Node(1, hedge.NewInt64Node(2)),
+			hedge.NewInt64Node(2, hedge.NewInt64Node(3)),
+		),
+	),
+	hedge.NewStringNode("Ints", hedge.NewInt64Node(0, hedge.NewInt64Node(math.MinInt64))),
 }
 
 func TestProto31(t *testing.T) {
