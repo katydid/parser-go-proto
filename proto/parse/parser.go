@@ -22,10 +22,10 @@ import (
 	"strconv"
 
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
-	"katydid.org.za/go/parser-go-proto/proto/desc"
-	"katydid.org.za/go/parser-go/cast"
-	"katydid.org.za/go/parser-go/jsonschema"
-	"katydid.org.za/go/parser-go/parse"
+	"go.katydid.org.za/parser-go-proto/proto/desc"
+	"go.katydid.org.za/parser-go/cast"
+	"go.katydid.org.za/parser-go/jsonschema"
+	"go.katydid.org.za/parser-go/parse"
 )
 
 // Parser represents a protocol buffer parser.

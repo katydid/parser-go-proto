@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/proto"
-	protoparser "katydid.org.za/go/parser-go-proto/proto"
-	"katydid.org.za/go/parser-go/cast"
-	"katydid.org.za/go/parser-go/parse"
+	protoparser "go.katydid.org.za/parser-go-proto/proto"
+	"go.katydid.org.za/parser-go/cast"
+	"go.katydid.org.za/parser-go/parse"
 )
 
 func NewMarshaledMyMessage() ([]byte, error) {

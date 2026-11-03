@@ -17,8 +17,8 @@ package proto
 import (
 	"fmt"
 
-	"katydid.org.za/go/parser-go/cp"
-	"katydid.org.za/go/parser-go/parse"
+	"go.katydid.org.za/parser-go/cp"
+	"go.katydid.org.za/parser-go/parse"
 )
 
 // NoLatentAppendingOrMerging returns whether the byte buffer has some latent fields.

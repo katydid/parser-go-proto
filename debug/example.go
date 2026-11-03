@@ -17,7 +17,7 @@ package debug
 import (
 	proto "google.golang.org/protobuf/proto"
 
-	"katydid.org.za/go/parser-go/hedge"
+	"go.katydid.org.za/parser-go/hedge"
 )
 
 // Input is a sample instance of the Debug struct.

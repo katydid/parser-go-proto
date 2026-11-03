@@ -22,9 +22,9 @@ import (
 	"time"
 
 	"google.golang.org/protobuf/proto"
-	"katydid.org.za/go/parser-go-proto/debug"
-	protoparser "katydid.org.za/go/parser-go-proto/proto"
-	"katydid.org.za/go/parser-go-proto/proto/prototests"
+	"go.katydid.org.za/parser-go-proto/debug"
+	protoparser "go.katydid.org.za/parser-go-proto/proto"
+	"go.katydid.org.za/parser-go-proto/proto/prototests"
 )
 
 var (

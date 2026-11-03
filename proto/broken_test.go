@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/proto"
-	"katydid.org.za/go/parser-go-proto/proto/parse"
-	"katydid.org.za/go/parser-go-proto/proto/prototests"
-	"katydid.org.za/go/parser-go/hedge"
+	"go.katydid.org.za/parser-go-proto/proto/parse"
+	"go.katydid.org.za/parser-go-proto/proto/prototests"
+	"go.katydid.org.za/parser-go/hedge"
 )
 
 func TestBrokenLengthValue(t *testing.T) {

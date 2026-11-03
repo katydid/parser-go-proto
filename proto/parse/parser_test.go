@@ -19,11 +19,11 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/proto"
-	protodebug "katydid.org.za/go/parser-go-proto/debug"
-	"katydid.org.za/go/parser-go-proto/proto/desc"
-	"katydid.org.za/go/parser-go-proto/proto/prototests"
-	"katydid.org.za/go/parser-go/expect"
-	"katydid.org.za/go/parser-go/parse"
+	protodebug "go.katydid.org.za/parser-go-proto/debug"
+	"go.katydid.org.za/parser-go-proto/proto/desc"
+	"go.katydid.org.za/parser-go-proto/proto/prototests"
+	"go.katydid.org.za/parser-go/expect"
+	"go.katydid.org.za/parser-go/parse"
 )
 
 func TestSingleDebugAInt(t *testing.T) {

@@ -38,8 +38,8 @@ The new process can construct the parser for the marshaled bytes:
 
 ```go
 import (
-	"katydid.org.za/go/parser-go/parse"
-	protoparser "katydid.org.za/go/parser-go-proto/proto"
+	"go.katydid.org.za/parser-go/parse"
+	protoparser "go.katydid.org.za/parser-go-proto/proto"
 )
 
 func NewMyMessageParser(marshaledMyMessage []byte) (parse.Parser, error) {

@@ -19,10 +19,10 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/proto"
-	"katydid.org.za/go/parser-go-proto/proto/prototests"
-	"katydid.org.za/go/parser-go/debug"
-	"katydid.org.za/go/parser-go/hedge"
-	"katydid.org.za/go/parser-go/rand"
+	"go.katydid.org.za/parser-go-proto/proto/prototests"
+	"go.katydid.org.za/parser-go/debug"
+	"go.katydid.org.za/parser-go/hedge"
+	"go.katydid.org.za/parser-go/rand"
 )
 
 var proto3Input1 = &prototests.Proto3{
